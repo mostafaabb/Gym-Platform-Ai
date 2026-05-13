@@ -89,6 +89,9 @@ class User(Base):
     gym_memberships = relationship("Membership", back_populates="member")
     audit_logs = relationship("AuditLog", back_populates="user")
     ai_sessions = relationship("AISession", back_populates="user")
+    refresh_tokens = relationship("RefreshToken", back_populates="user")
+    received_notifications = relationship("NotificationLog", back_populates="recipient")
+    sent_messages = relationship("Message", back_populates="sender")
 
     __table_args__ = (
         Index("idx_user_email_active", "email", "is_active"),
@@ -132,6 +135,9 @@ class Gym(Base):
     classes = relationship("GymClass", back_populates="gym")
     schedules = relationship("GymSchedule", back_populates="gym")
     subscriptions = relationship("Subscription", back_populates="gym")
+    attendance_records = relationship("Attendance", back_populates="gym")
+    reports = relationship("Report", back_populates="gym")
+    analytics_snapshots = relationship("AnalyticsSnapshot", back_populates="gym")
 
     __table_args__ = (
         Index("idx_gym_owner_active", "owner_id", "is_active"),
@@ -191,6 +197,10 @@ class Member(Base):
     workouts = relationship("Workout", back_populates="member")
     nutrition_logs = relationship("NutritionLog", back_populates="member")
     progress_tracking = relationship("ProgressTracking", back_populates="member")
+    attendance_records = relationship("Attendance", back_populates="member")
+    pose_events = relationship("PoseAnalysisEvent", back_populates="member")
+    workout_plans = relationship("WorkoutPlan", back_populates="member")
+    meal_plans = relationship("MealPlan", back_populates="member")
 
     __table_args__ = (
         Index("idx_member_gym_active", "gym_id", "is_active"),
@@ -381,6 +391,7 @@ class GymClass(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     gym = relationship("Gym", back_populates="classes")
+    bookings = relationship("ClassBooking", back_populates="gym_class")
 
 
 # ============== GYM SCHEDULES ==============
@@ -437,6 +448,29 @@ class Payment(Base):
     subscription = relationship("Subscription", back_populates="payments")
 
 
+# ============== SESSION SECURITY ==============
+class RefreshToken(Base):
+    """Refresh token rotation and session management."""
+    __tablename__ = "refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    token_hash = Column(String(255), unique=True, nullable=False)
+    device_label = Column(String(255), nullable=True)
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    expires_at = Column(DateTime, nullable=False)
+    revoked_at = Column(DateTime, nullable=True)
+    replaced_by_token_hash = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="refresh_tokens")
+
+    __table_args__ = (
+        Index("idx_refresh_user_active", "user_id", "revoked_at"),
+    )
+
+
 # ============== AI SESSIONS ==============
 class AISession(Base):
     """AI voice coach session records."""
@@ -471,6 +505,195 @@ class CoachingSession(Base):
 
     # Relationships
     trainer = relationship("Trainer", back_populates="coaching_sessions")
+
+
+# ============== GENERATED AI PLANS ==============
+class WorkoutPlan(Base):
+    """AI-generated workout plan with progression metadata."""
+    __tablename__ = "workout_plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    goal = Column(String(100), nullable=False)
+    weekly_structure = Column(JSON, default=dict)
+    daily_workouts = Column(JSON, default=list)
+    progression_strategy = Column(JSON, default=dict)
+    recovery_guidance = Column(JSON, default=dict)
+    source = Column(String(50), default="ai")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    archived_at = Column(DateTime, nullable=True)
+
+    member = relationship("Member", back_populates="workout_plans")
+
+    __table_args__ = (
+        Index("idx_workout_plan_member_created", "member_id", "created_at"),
+    )
+
+
+class MealPlan(Base):
+    """AI nutrition plan with calories and macro strategy."""
+    __tablename__ = "meal_plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False)
+    goal = Column(String(100), nullable=False)
+    calories_target = Column(Integer, nullable=False)
+    macro_targets = Column(JSON, default=dict)
+    meals = Column(JSON, default=list)
+    shopping_list = Column(JSON, default=list)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    member = relationship("Member", back_populates="meal_plans")
+
+    __table_args__ = (
+        Index("idx_meal_plan_member_created", "member_id", "created_at"),
+    )
+
+
+# ============== ATTENDANCE, BOOKINGS & MESSAGING ==============
+class Attendance(Base):
+    """QR and manual attendance check-ins."""
+    __tablename__ = "attendance"
+
+    id = Column(Integer, primary_key=True, index=True)
+    gym_id = Column(Integer, ForeignKey("gyms.id"), nullable=False)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False)
+    check_in_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    check_out_at = Column(DateTime, nullable=True)
+    source = Column(String(50), default="qr")
+    qr_payload = Column(String(255), nullable=True)
+    metadata_json = Column("metadata", JSON, default=dict)
+
+    gym = relationship("Gym", back_populates="attendance_records")
+    member = relationship("Member", back_populates="attendance_records")
+
+    __table_args__ = (
+        Index("idx_attendance_gym_time", "gym_id", "check_in_at"),
+        Index("idx_attendance_member_time", "member_id", "check_in_at"),
+    )
+
+
+class ClassBooking(Base):
+    """Class booking records."""
+    __tablename__ = "class_bookings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    class_id = Column(Integer, ForeignKey("gym_classes.id"), nullable=False)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False)
+    status = Column(String(50), default="booked")
+    booked_at = Column(DateTime, default=datetime.utcnow)
+    cancelled_at = Column(DateTime, nullable=True)
+
+    gym_class = relationship("GymClass", back_populates="bookings")
+
+    __table_args__ = (
+        UniqueConstraint("class_id", "member_id", name="uq_class_member_booking"),
+        Index("idx_booking_member_status", "member_id", "status"),
+    )
+
+
+class MessageThread(Base):
+    """Realtime chat thread for trainers, members, and owners."""
+    __tablename__ = "message_threads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    gym_id = Column(Integer, ForeignKey("gyms.id"), nullable=True)
+    subject = Column(String(255), nullable=True)
+    participant_ids = Column(JSON, default=list)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_message_at = Column(DateTime, nullable=True)
+
+    messages = relationship("Message", back_populates="thread")
+
+    __table_args__ = (
+        Index("idx_thread_gym_last_message", "gym_id", "last_message_at"),
+    )
+
+
+class Message(Base):
+    """Individual chat message."""
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    thread_id = Column(Integer, ForeignKey("message_threads.id"), nullable=False)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    body = Column(Text, nullable=False)
+    metadata_json = Column("metadata", JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    read_at = Column(DateTime, nullable=True)
+
+    thread = relationship("MessageThread", back_populates="messages")
+    sender = relationship("User", back_populates="sent_messages")
+
+    __table_args__ = (
+        Index("idx_message_thread_created", "thread_id", "created_at"),
+    )
+
+
+# ============== COMPUTER VISION & ANALYTICS ==============
+class PoseAnalysisEvent(Base):
+    """Per-exercise form analysis events generated from pose estimation."""
+    __tablename__ = "pose_analysis_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False)
+    workout_id = Column(Integer, ForeignKey("workouts.id"), nullable=True)
+    ai_session_id = Column(Integer, ForeignKey("ai_sessions.id"), nullable=True)
+    exercise = Column(String(100), nullable=False)
+    rep_count = Column(Integer, default=0)
+    form_score = Column(Float, nullable=False)
+    alerts = Column(JSON, default=list)
+    landmarks_summary = Column(JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    member = relationship("Member", back_populates="pose_events")
+
+    __table_args__ = (
+        Index("idx_pose_member_exercise_time", "member_id", "exercise", "created_at"),
+    )
+
+
+class AnalyticsSnapshot(Base):
+    """Persisted analytics rollups for dashboards and reports."""
+    __tablename__ = "analytics_snapshots"
+
+    id = Column(Integer, primary_key=True, index=True)
+    gym_id = Column(Integer, ForeignKey("gyms.id"), nullable=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=True)
+    snapshot_type = Column(String(100), nullable=False)
+    period_start = Column(DateTime, nullable=False)
+    period_end = Column(DateTime, nullable=False)
+    metrics = Column(JSON, default=dict)
+    insights = Column(JSON, default=list)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    gym = relationship("Gym", back_populates="analytics_snapshots")
+
+    __table_args__ = (
+        Index("idx_snapshot_gym_type_period", "gym_id", "snapshot_type", "period_start"),
+        Index("idx_snapshot_member_type_period", "member_id", "snapshot_type", "period_start"),
+    )
+
+
+class Report(Base):
+    """Generated management, retention, revenue, and AI reports."""
+    __tablename__ = "reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    gym_id = Column(Integer, ForeignKey("gyms.id"), nullable=True)
+    generated_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    report_type = Column(String(100), nullable=False)
+    title = Column(String(255), nullable=False)
+    payload = Column(JSON, default=dict)
+    status = Column(String(50), default="ready")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    gym = relationship("Gym", back_populates="reports")
+
+    __table_args__ = (
+        Index("idx_report_gym_type_created", "gym_id", "report_type", "created_at"),
+    )
 
 
 # ============== AUDIT & LOGGING ==============
@@ -510,3 +733,9 @@ class NotificationLog(Base):
     is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     read_at = Column(DateTime, nullable=True)
+
+    recipient = relationship("User", back_populates="received_notifications")
+
+    __table_args__ = (
+        Index("idx_notification_recipient_read", "recipient_id", "is_read"),
+    )

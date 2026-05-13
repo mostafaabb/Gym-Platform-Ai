@@ -1,14 +1,17 @@
-from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
 from contextlib import asynccontextmanager
 import logging
-from backend.core.config import get_settings
-from backend.core.database import init_db, close_db
-from backend.core.exceptions import AppException
+
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+
 from backend.api import api_router
+from backend.core.config import get_settings
+from backend.core.database import close_db, init_db
+from backend.core.exceptions import AppException
+from backend.core.middleware import AuditLogMiddleware, RateLimitMiddleware, SecurityHeadersMiddleware
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -16,33 +19,31 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup and shutdown events."""
-    # Startup
-    logger.info("🚀 Starting GymFlow AI Backend...")
+    logger.info("Starting GymFlow AI Backend")
     await init_db()
-    logger.info("✅ Database initialized")
+    logger.info("Database initialized")
 
     yield
 
-    # Shutdown
-    logger.info("🛑 Shutting down GymFlow AI Backend...")
+    logger.info("Shutting down GymFlow AI Backend")
     await close_db()
-    logger.info("✅ Database closed")
+    logger.info("Database closed")
 
 
 def create_app() -> FastAPI:
-    """Create and configure FastAPI application."""
-
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
-        description="Production-grade AI-powered gym operating system",
+        description=(
+            "Production-grade AI-powered gym operating system with voice coaching, "
+            "pose detection, workout intelligence, analytics, and multi-tenant gym SaaS."
+        ),
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        docs_url="/docs",
+        redoc_url="/redoc",
         lifespan=lifespan,
     )
 
-    # ============== MIDDLEWARE ==============
-
-    # CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.BACKEND_CORS_ORIGINS,
@@ -50,19 +51,16 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-    # Trusted Host
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=["localhost", "127.0.0.1", "*.gymflowai.com", "*"]
         if settings.ENVIRONMENT == "development"
         else ["localhost", "127.0.0.1", "*.gymflowai.com"],
     )
-
-    # GZIP compression
     app.add_middleware(GZipMiddleware, minimum_size=1000)
-
-    # ============== EXCEPTION HANDLERS ==============
+    app.add_middleware(AuditLogMiddleware)
+    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
 
     @app.exception_handler(AppException)
     async def app_exception_handler(request: Request, exc: AppException):
@@ -77,7 +75,7 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
-        logger.error(f"Unhandled exception: {exc}", exc_info=True)
+        logger.error("Unhandled exception: %s", exc, exc_info=True)
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
@@ -87,30 +85,29 @@ def create_app() -> FastAPI:
             },
         )
 
-    # ============== ROUTES ==============
-
     @app.get("/health", tags=["Health"])
     async def health_check():
-        """Health check endpoint."""
         return {
             "status": "healthy",
             "app_name": settings.APP_NAME,
             "version": settings.APP_VERSION,
             "environment": settings.ENVIRONMENT,
+            "features": {
+                "ai": settings.ENABLE_AI_FEATURES,
+                "pose_detection": settings.ENABLE_POSE_DETECTION,
+                "websockets": settings.ENABLE_WEBSOCKETS,
+            },
         }
 
     @app.get("/api/v1/docs", tags=["Documentation"])
     async def api_docs():
-        """API documentation."""
         return {
             "message": "API documentation available at /docs",
-            "openapi_url": "/openapi.json",
+            "openapi_url": f"{settings.API_V1_STR}/openapi.json",
         }
 
     app.include_router(api_router)
-
     return app
 
 
-# Create app instance
 app = create_app()

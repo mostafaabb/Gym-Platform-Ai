@@ -29,9 +29,10 @@ if not database_url.startswith("sqlite"):
         {
             "pool_size": settings.DATABASE_POOL_SIZE,
             "max_overflow": settings.DATABASE_MAX_OVERFLOW,
-            "poolclass": NullPool if settings.ENVIRONMENT == "test" else None,
         }
     )
+    if settings.ENVIRONMENT == "test":
+        engine_kwargs["poolclass"] = NullPool
 
 engine = create_async_engine(database_url, **engine_kwargs)
 

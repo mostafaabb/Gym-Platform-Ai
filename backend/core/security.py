@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Any
+import hashlib
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from backend.core.config import get_settings
@@ -43,10 +44,15 @@ def create_access_token(
     return encoded_jwt
 
 
-def create_refresh_token(subject: str | int) -> str:
+def create_refresh_token(
+    subject: str | int,
+    extra_claims: Optional[dict[str, Any]] = None,
+) -> str:
     """Create a JWT refresh token."""
     expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode = {"exp": expire, "sub": str(subject), "type": "refresh"}
+    if extra_claims:
+        to_encode.update(extra_claims)
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
@@ -61,3 +67,8 @@ def decode_token(token: str) -> dict[str, Any]:
         if "expired" in message:
             raise ValueError("Token has expired") from exc
         raise ValueError("Invalid token") from exc
+
+
+def hash_token(token: str) -> str:
+    """Hash opaque/session tokens before persistence."""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional, Any, Literal
 from pydantic import BaseModel, EmailStr, Field
 from enum import Enum
 
@@ -57,6 +57,19 @@ class TokenResponse(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetConfirmRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8)
+
+
+class EmailVerificationRequest(BaseModel):
+    token: str
 
 
 class UserResponse(BaseModel):
@@ -155,6 +168,117 @@ class TrainerResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============== PLATFORM SCHEMAS ==============
+class ClassCreateRequest(BaseModel):
+    gym_id: int
+    name: str
+    description: Optional[str] = None
+    instructor_id: Optional[int] = None
+    class_type: Optional[str] = None
+    max_capacity: int = Field(default=20, ge=1, le=250)
+    duration_minutes: int = Field(default=45, ge=5, le=240)
+    price: Optional[float] = Field(default=None, ge=0)
+    start_time: datetime
+
+
+class ClassBookingRequest(BaseModel):
+    member_id: int
+
+
+class AttendanceCheckInRequest(BaseModel):
+    gym_id: int
+    member_id: int
+    source: Literal["qr", "manual", "kiosk", "mobile"] = "qr"
+    qr_payload: Optional[str] = None
+
+
+class SubscriptionCheckoutRequest(BaseModel):
+    gym_id: int
+    plan: SubscriptionPlanEnum
+    seats: int = Field(default=1, ge=1)
+    billing_cycle: Literal["monthly", "annual"] = "monthly"
+
+
+class NotificationCreateRequest(BaseModel):
+    recipient_id: int
+    subject: Optional[str] = None
+    message: str
+    notification_type: Literal["email", "sms", "push", "in_app"] = "in_app"
+
+
+class MessageThreadCreateRequest(BaseModel):
+    gym_id: Optional[int] = None
+    subject: Optional[str] = None
+    participant_ids: list[int] = Field(default_factory=list)
+
+
+class MessageCreateRequest(BaseModel):
+    sender_id: int
+    body: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReportCreateRequest(BaseModel):
+    gym_id: Optional[int] = None
+    generated_by_id: int
+    report_type: str
+    title: str
+    filters: dict[str, Any] = Field(default_factory=dict)
+
+
+class AnalyticsSnapshotRequest(BaseModel):
+    gym_id: Optional[int] = None
+    member_id: Optional[int] = None
+    snapshot_type: str
+    period_start: datetime
+    period_end: datetime
+    metrics: dict[str, Any] = Field(default_factory=dict)
+    insights: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class PoseFrameRequest(BaseModel):
+    member_id: int
+    workout_id: Optional[int] = None
+    exercise: Literal[
+        "squat",
+        "push_up",
+        "bench_press",
+        "deadlift",
+        "pull_up",
+        "lunge",
+        "shoulder_press",
+    ]
+    landmarks: list[dict[str, float]] = Field(default_factory=list)
+    frame_metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class WorkoutGenerationRequest(BaseModel):
+    member_id: int
+    goal: FitnessGoalEnum
+    weight_kg: Optional[float] = Field(default=None, ge=20, le=350)
+    height_cm: Optional[float] = Field(default=None, ge=80, le=260)
+    injuries: list[str] = Field(default_factory=list)
+    experience_level: ExperienceLevelEnum = ExperienceLevelEnum.BEGINNER
+    recovery_status: Literal["low", "moderate", "high"] = "moderate"
+    available_equipment: list[str] = Field(default_factory=list)
+    days_per_week: int = Field(default=4, ge=1, le=7)
+
+
+class NutritionPlanRequest(BaseModel):
+    member_id: int
+    goal: FitnessGoalEnum
+    calories_target: int = Field(default=2400, ge=900, le=8000)
+    dietary_restrictions: list[str] = Field(default_factory=list)
+    meals_per_day: int = Field(default=4, ge=2, le=8)
+
+
+class VoiceCoachRequest(BaseModel):
+    session_id: Optional[int] = None
+    member_id: Optional[int] = None
+    message: str
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 # ============== WORKOUT SCHEMAS ==============
