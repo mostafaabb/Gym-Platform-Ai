@@ -68,10 +68,11 @@ export default function AICoachPage() {
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="absolute top-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-6 py-3 rounded-full bg-red-500 text-white font-bold shadow-2xl shadow-red-500/40"
                 >
-                  <AlertTriangle size={20} className="animate-pulse" />
-                  {formAlert}
+                  <div className="absolute top-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-6 py-3 rounded-full bg-red-500 text-white font-bold shadow-2xl shadow-red-500/40">
+                    <AlertTriangle size={20} className="animate-pulse" />
+                    {formAlert}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -100,8 +101,9 @@ export default function AICoachPage() {
                   <div className="h-1.5 w-48 bg-zinc-800 rounded-full overflow-hidden">
                      <motion.div 
                        animate={{ width: `${score || 94}%` }}
-                       className="h-full bg-emerald-400" 
-                     />
+                     >
+                       <div className="h-full bg-emerald-400" />
+                     </motion.div>
                   </div>
                </div>
             </div>
@@ -155,8 +157,9 @@ export default function AICoachPage() {
                   key={i}
                   animate={{ height: isActive && !isMuted ? [10, 40, 20, 50, 15] : 4 }}
                   transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.1 }}
-                  className="w-1.5 rounded-full bg-primary/40"
-                />
+                >
+                  <div className="w-1.5 rounded-full bg-primary/40" />
+                </motion.div>
               ))}
            </div>
         </div>

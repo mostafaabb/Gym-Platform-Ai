@@ -184,11 +184,12 @@ export default function OwnerDashboard() {
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${(item.users / 150) * 100}%` }}
-                        className={cn(
+                      >
+                        <div className={cn(
                           "h-full rounded-full",
                           item.users > 100 ? "bg-red-500" : "bg-primary"
-                        )}
-                      />
+                        )} />
+                      </motion.div>
                    </div>
                 </div>
               ))}

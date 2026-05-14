@@ -23,9 +23,8 @@ const Navbar = () => {
     <motion.nav 
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl"
     >
-      <div className="container mx-auto flex h-20 items-center justify-between px-6">
+      <div className="fixed top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl container mx-auto flex h-20 items-center justify-between px-6">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/20">
             <Dumbbell className="text-white" size={24} />
@@ -58,13 +57,14 @@ const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, tit
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay }}
     viewport={{ once: true }}
-    className="group relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-8 transition-all hover:border-primary/50 hover:bg-zinc-900"
   >
+    <div className="group relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-8 transition-all hover:border-primary/50 hover:bg-zinc-900">
     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-800 transition-colors group-hover:bg-primary/20">
       <Icon className="text-zinc-400 transition-colors group-hover:text-primary" size={24} />
     </div>
-    <h3 className="mb-2 text-xl font-semibold text-white">{title}</h3>
-    <p className="text-sm leading-relaxed text-zinc-400">{description}</p>
+      <h3 className="mb-2 text-xl font-semibold text-white">{title}</h3>
+      <p className="text-sm leading-relaxed text-zinc-400">{description}</p>
+    </div>
   </motion.div>
 );
 
@@ -85,43 +85,46 @@ export default function LandingPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 backdrop-blur-md"
           >
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
-            </span>
-            <span className="text-xs font-medium text-zinc-300 tracking-wide uppercase">Next Gen Gym OS is Live</span>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+              </span>
+              <span className="text-xs font-medium text-zinc-300 tracking-wide uppercase">Next Gen Gym OS is Live</span>
+            </div>
           </motion.div>
 
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-8 text-5xl font-extrabold tracking-tight md:text-8xl"
           >
+            <h1 className="mb-8 text-5xl font-extrabold tracking-tight md:text-8xl">
             Elevate Your Gym <br />
             <span className="bg-gradient-to-r from-primary via-blue-400 to-purple-500 bg-clip-text text-transparent">
               With Pure Intelligence
             </span>
-          </motion.h1>
+            </h1>
+          </motion.div>
 
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mx-auto mb-10 max-w-2xl text-lg text-zinc-400 md:text-xl"
           >
-            Real-time voice coaching, posture analysis, and automated management. 
-            The only OS your gym will ever need. Built for performance.
-          </motion.p>
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-zinc-400 md:text-xl">
+              Real-time voice coaching, posture analysis, and automated management. 
+              The only OS your gym will ever need. Built for performance.
+            </p>
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col items-center justify-center gap-4 sm:flex-row"
           >
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button size="lg" className="h-14 rounded-full bg-white px-8 text-lg font-semibold text-black hover:bg-zinc-200">
               Start Free Trial
               <ChevronRight className="ml-2" size={20} />
@@ -129,6 +132,7 @@ export default function LandingPage() {
             <Button size="lg" variant="outline" className="h-14 rounded-full border-white/10 bg-white/5 px-8 text-lg font-semibold text-white backdrop-blur-md hover:bg-white/10">
               Watch Demo
             </Button>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -225,9 +229,9 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ duration: 1 }}
                 viewport={{ once: true }}
-                className="relative rounded-3xl border border-white/10 bg-zinc-900 p-2 shadow-2xl"
               >
-                <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
+                <div className="relative rounded-3xl border border-white/10 bg-zinc-900 p-2 shadow-2xl">
+                  <div className="aspect-video w-full overflow-hidden rounded-2xl bg-black">
                    {/* Placeholder for AI Dashboard Visual */}
                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-900 to-black p-12">
                       <div className="grid grid-cols-2 gap-4 w-full h-full">

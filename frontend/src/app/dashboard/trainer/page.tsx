@@ -34,8 +34,8 @@ const ClientCard = ({ client }: { client: any }) => (
   <motion.div
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
-    className="group relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-5 transition-all hover:bg-zinc-900"
   >
+    <div className="group relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-5 transition-all hover:bg-zinc-900">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
         <div className="relative h-12 w-12 rounded-full bg-zinc-800 p-0.5">
@@ -78,6 +78,7 @@ const ClientCard = ({ client }: { client: any }) => (
           View Live Feed
           <ChevronRight size={14} className="ml-1" />
        </Button>
+    </div>
     </div>
   </motion.div>
 );
