@@ -43,7 +43,7 @@ services:
     name: gymflow-frontend
     env: node
     rootDir: frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: npm start
     plan: free
     region: oregon
@@ -52,7 +52,7 @@ services:
       - key: NEXT_PUBLIC_API_URL
         value: "https://gymflow-backend.onrender.com/api/v1"
       - key: NODE_VERSION
-        value: 18.17.0
+        value: 20
 
   # Redis Instance
   - type: keyvalue
