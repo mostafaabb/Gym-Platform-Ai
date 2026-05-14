@@ -37,9 +37,9 @@
     "lucide-react": "^0.292.0",
     "next-themes": "^0.2.1",
     "js-cookie": "^3.0.5",
-    "@mediapipe/pose": "^0.5.1675006124",
-    "@mediapipe/camera_utils": "^0.4.1675005930",
-    "@mediapipe/drawing_utils": "^0.4.1675005939"
+    "@mediapipe/pose": "0.5.1675469404",
+    "@mediapipe/camera_utils": "0.3.1675466862",
+    "@mediapipe/drawing_utils": "0.3.1675466124"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
