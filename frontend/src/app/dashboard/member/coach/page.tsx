@@ -112,7 +112,7 @@ export default function AICoachPage() {
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4 px-6 py-4 rounded-3xl bg-zinc-900/60 backdrop-blur-2xl border border-white/10 shadow-2xl transition-opacity opacity-0 group-hover:opacity-100">
           <Button 
             variant="ghost" 
-            size="icon" 
+            size="sm" 
             className={cn("rounded-2xl h-12 w-12", isMuted ? "bg-red-500/20 text-red-500" : "bg-white/5 text-white")}
             onClick={() => setIsMuted(!isMuted)}
           >
@@ -120,7 +120,7 @@ export default function AICoachPage() {
           </Button>
           <Button 
             variant="ghost" 
-            size="icon" 
+            size="sm" 
             className={cn("rounded-2xl h-12 w-12", !isCameraOn ? "bg-red-500/20 text-red-500" : "bg-white/5 text-white")}
             onClick={() => setIsCameraOn(!isCameraOn)}
           >
@@ -203,7 +203,7 @@ export default function AICoachPage() {
                    }}
                    className="w-full bg-zinc-950 border border-white/10 rounded-2xl py-3 pl-4 pr-12 text-sm outline-none focus:border-primary/50 transition-all text-white"
                  />
-                 <Button size="icon" className="absolute right-1.5 top-1.5 h-8 w-8 rounded-xl bg-primary">
+                 <Button size="sm" className="absolute right-1.5 top-1.5 h-8 w-8 rounded-xl bg-primary">
                     <ChevronRight size={18} />
                  </Button>
               </div>

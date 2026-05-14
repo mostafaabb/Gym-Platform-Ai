@@ -131,7 +131,7 @@ export default function OwnerDashboard() {
                  <BarChart3 className="text-primary" size={20} />
                  Revenue Performance
               </h3>
-              <Button variant="ghost" size="icon" className="text-zinc-500">
+              <Button variant="ghost" size="sm" className="text-zinc-500">
                  <MoreHorizontal size={20} />
               </Button>
            </div>

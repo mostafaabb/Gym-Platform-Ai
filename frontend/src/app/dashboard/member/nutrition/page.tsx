@@ -128,7 +128,7 @@ export default function NutritionPage() {
                             <p className="text-xs text-zinc-500">{meal.time} • {meal.calories} kcal</p>
                          </div>
                       </div>
-                      <Button variant="ghost" size="icon" className="rounded-full text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="sm" className="rounded-full text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">
                          <ChevronRight size={20} />
                       </Button>
                    </div>

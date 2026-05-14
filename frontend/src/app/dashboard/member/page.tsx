@@ -68,7 +68,7 @@ const RecommendedWorkout = ({ title, duration, intensity, image }: any) => (
       <h4 className="font-medium text-white">{title}</h4>
       <p className="text-xs text-zinc-500">{duration} • {intensity}</p>
     </div>
-    <Button size="icon" variant="ghost" className="rounded-full text-zinc-500 group-hover:text-primary">
+    <Button size="sm" variant="ghost" className="rounded-full text-zinc-500 group-hover:text-primary">
       <ChevronRight size={18} />
     </Button>
   </div>

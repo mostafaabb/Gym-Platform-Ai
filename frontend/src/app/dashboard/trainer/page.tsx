@@ -144,7 +144,7 @@ export default function TrainerDashboard() {
                              <div className="h-full bg-primary" style={{ width: `${c.progress}%` }} />
                           </div>
                           <span className="text-xs text-zinc-500 w-20 text-right">{c.lastSeen}</span>
-                          <Button variant="ghost" size="icon" className="text-zinc-500 group-hover:text-white">
+                          <Button variant="ghost" size="sm" className="text-zinc-500 group-hover:text-white">
                              <ExternalLink size={16} />
                           </Button>
                        </div>

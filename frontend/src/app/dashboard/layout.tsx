@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {isCollapsed && <Dumbbell className="mx-auto text-primary" size={24} />}
           <Button 
             variant="ghost" 
-            size="icon" 
+            size="sm" 
             className="hidden md:flex text-zinc-500 hover:text-white"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
@@ -107,7 +107,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}>
         <header className="flex h-20 items-center justify-between border-b border-white/5 bg-zinc-950/20 px-8 backdrop-blur-md">
           <div className="flex items-center gap-4">
-             <Button variant="ghost" size="icon" className="md:hidden">
+             <Button variant="ghost" size="sm" className="md:hidden">
                <Menu size={24} />
              </Button>
              <h2 className="text-xl font-semibold">

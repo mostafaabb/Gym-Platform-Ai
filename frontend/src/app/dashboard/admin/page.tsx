@@ -121,7 +121,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="py-4 text-right text-zinc-300">{gym.users}</td>
                           <td className="py-4 text-right">
-                             <Button variant="ghost" size="icon" className="text-zinc-500 group-hover:text-white">
+                             <Button variant="ghost" size="sm" className="text-zinc-500 group-hover:text-white">
                                 <MoreVertical size={16} />
                              </Button>
                           </td>
