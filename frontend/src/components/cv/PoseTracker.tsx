@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { Pose, Results } from "@mediapipe/pose";
-import * as cam from "@mediapipe/camera_utils";
-import * as draw from "@mediapipe/drawing_utils";
 
 interface PoseTrackerProps {
   onLandmarksUpdate?: (landmarks: any) => void;
@@ -23,69 +20,100 @@ const PoseTracker: React.FC<PoseTrackerProps> = ({ onLandmarksUpdate, isActive }
       return;
     }
 
-    const pose = new Pose({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
-      },
-    });
+    // Initialize MediaPipe dynamically to avoid build-time import issues
+    let pose: any;
+    let cam: any;
+    let draw: any;
 
-    pose.setOptions({
-      modelComplexity: 1,
-      smoothLandmarks: true,
-      enableSegmentation: false,
-      smoothSegmentation: false,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-    });
+    const initPose = async () => {
+      try {
+        // Use require for legacy MediaPipe packages to bypass ES module issues
+        const PoseLib = require("@mediapipe/pose");
+        const CamLib = require("@mediapipe/camera_utils");
+        const DrawLib = require("@mediapipe/drawing_utils");
 
-    pose.onResults((results: Results) => {
-      if (!canvasRef.current || !videoRef.current) return;
+        // MediaPipe packages sometimes export differently depending on environment
+        const Pose = PoseLib.Pose || (window as any).Pose;
+        cam = CamLib;
+        draw = DrawLib;
 
-      const canvasCtx = canvasRef.current.getContext("2d");
-      if (!canvasCtx) return;
-
-      canvasCtx.save();
-      canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      
-      // Only draw landmarks, don't draw the video frame (we show that via video element)
-      // Or we can draw the results.image if we want everything in one canvas
-      
-      if (results.poseLandmarks) {
-        draw.drawConnectors(canvasCtx, results.poseLandmarks, [[11,12], [11,13], [13,15], [12,14], [14,16], [11,23], [12,24], [23,24], [23,25], [25,27], [24,26], [26,28]], {
-          color: "#3b82f6",
-          lineWidth: 4,
+        pose = new Pose({
+          locateFile: (file: string) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+          },
         });
-        draw.drawLandmarks(canvasCtx, results.poseLandmarks, {
-          color: "#ffffff",
-          lineWidth: 2,
-          radius: 4,
-        });
-        
-        if (onLandmarksUpdate) {
-          onLandmarksUpdate(results.poseLandmarks);
-        }
-      }
-      canvasCtx.restore();
-    });
 
-    if (videoRef.current) {
-      cameraRef.current = new cam.Camera(videoRef.current, {
-        onFrame: async () => {
-          if (videoRef.current) {
-            await pose.send({ image: videoRef.current });
+        pose.setOptions({
+          modelComplexity: 1,
+          smoothLandmarks: true,
+          enableSegmentation: false,
+          smoothSegmentation: false,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        });
+
+        pose.onResults((results: any) => {
+          if (!canvasRef.current || !videoRef.current) return;
+
+          const canvasCtx = canvasRef.current.getContext("2d");
+          if (!canvasCtx) return;
+
+          canvasCtx.save();
+          canvasCtx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          
+          if (results.poseLandmarks) {
+            // drawing_utils functions are often attached directly to the module
+            const drawConnectors = draw.drawConnectors || (window as any).drawConnectors;
+            const drawLandmarks = draw.drawLandmarks || (window as any).drawLandmarks;
+
+            if (drawConnectors) {
+              drawConnectors(canvasCtx, results.poseLandmarks, PoseLib.POSE_CONNECTIONS || [[11,12], [11,13], [13,15], [12,14], [14,16], [11,23], [12,24], [23,24], [23,25], [25,27], [24,26], [26,28]], {
+                color: "#3b82f6",
+                lineWidth: 4,
+              });
+            }
+            if (drawLandmarks) {
+              drawLandmarks(canvasCtx, results.poseLandmarks, {
+                color: "#ffffff",
+                lineWidth: 2,
+                radius: 4,
+              });
+            }
+            
+            if (onLandmarksUpdate) {
+              onLandmarksUpdate(results.poseLandmarks);
+            }
           }
-        },
-        width: 1280,
-        height: 720,
-      });
-      cameraRef.current.start();
-    }
+          canvasCtx.restore();
+        });
+
+        if (videoRef.current) {
+          const Camera = cam.Camera || (window as any).Camera;
+          cameraRef.current = new Camera(videoRef.current, {
+            onFrame: async () => {
+              if (videoRef.current && pose) {
+                await pose.send({ image: videoRef.current });
+              }
+            },
+            width: 1280,
+            height: 720,
+          });
+          cameraRef.current.start();
+        }
+      } catch (err) {
+        console.error("Failed to initialize Pose Engine:", err);
+      }
+    };
+
+    initPose();
 
     return () => {
       if (cameraRef.current) {
         cameraRef.current.stop();
       }
-      pose.close();
+      if (pose) {
+        pose.close();
+      }
     };
   }, [isActive, onLandmarksUpdate]);
 
