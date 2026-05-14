@@ -33,6 +33,10 @@ services:
         value: "true"
       - key: ENABLE_WEBSOCKETS
         value: "true"
+      - key: OPENAI_API_KEY
+        sync: false # User will enter this manually in Render
+      - key: OPENAI_MODEL
+        value: "gpt-4o-mini"
 
   # Frontend Next.js Service
   - type: web
