@@ -39,9 +39,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <motion.aside
         animate={{ width: isCollapsed ? 80 : 260 }}
-        className="fixed left-0 top-0 z-40 h-full border-r border-white/5 bg-zinc-950/50 backdrop-blur-xl"
       >
-        <div className="flex h-20 items-center justify-between px-6">
+        <div className="fixed left-0 top-0 z-40 h-full border-r border-white/5 bg-zinc-950/50 backdrop-blur-xl">
+          <div className="flex h-20 items-center justify-between px-6">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
               <Dumbbell className="text-primary" size={24} />
@@ -97,6 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <LogOut size={20} />
             {!isCollapsed && <span className="ml-3 text-sm font-medium">Logout</span>}
           </button>
+        </div>
         </div>
       </motion.aside>
 
