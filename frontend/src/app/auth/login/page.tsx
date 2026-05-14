@@ -58,9 +58,9 @@ export default function LoginPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-md"
       >
-        <div className="flex flex-col items-center mb-10">
+        <div className="relative z-10 w-full max-w-md">
+          <div className="flex flex-col items-center mb-10">
           <Link href="/" className="mb-6 flex items-center gap-3 group">
              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary shadow-xl shadow-primary/20 transition-transform group-hover:scale-110">
                 <Dumbbell className="text-white" size={32} />
@@ -76,9 +76,10 @@ export default function LoginPage() {
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-500 text-center"
             >
-              {error}
+              <div className="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-500 text-center">
+                {error}
+              </div>
             </motion.div>
           )}
           
@@ -168,6 +169,7 @@ export default function LoginPage() {
               Google
             </Button>
           </div>
+        </div>
         </div>
 
         <p className="mt-10 text-center text-sm text-zinc-500">
