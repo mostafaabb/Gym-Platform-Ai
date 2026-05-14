@@ -1,0 +1,27 @@
+FROM python:3.11-slim
+
+# Install system dependencies for OpenCV, MediaPipe, and Postgres
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
+COPY . .
+
+# Set Python path to include the root directory
+ENV PYTHONPATH=/app
+
+# Expose the port
+EXPOSE 8000
+
+# Start the application using Gunicorn with Uvicorn workers for production
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "backend.main:app", "--bind", "0.0.0.0:8000", "--timeout", "120"]

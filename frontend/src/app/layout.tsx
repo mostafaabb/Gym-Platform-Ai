@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,18 +15,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GymFlow AI - AI-Powered Gym Management",
+  title: "GymFlow AI | Elite AI-Powered Gym Operating System",
   description:
-    "Transform your gym with AI-powered coaching, nutrition planning, and member analytics",
+    "The world's most advanced AI-powered gym management platform. Real-time voice coaching, posture analysis, and automated operations for elite fitness centers.",
   keywords: [
-    "gym management",
-    "AI coach",
-    "fitness platform",
-    "SaaS",
-    "gym software",
+    "gym management software",
+    "AI fitness coach",
+    "computer vision fitness",
+    "SaaS for gyms",
+    "automated workout tracking",
+    "GymFlow AI",
   ],
-  authors: [{ name: "GymFlow AI" }],
+  authors: [{ name: "GymFlow AI Team" }],
   viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://gymflowai.com",
+    title: "GymFlow AI | Elite AI-Powered Gym OS",
+    description: "Transform your gym with real-time AI coaching and posture analysis.",
+    siteName: "GymFlow AI",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GymFlow AI | Elite AI-Powered Gym OS",
+    description: "Transform your gym with real-time AI coaching and posture analysis.",
+    creator: "@gymflowai",
+  },
 };
 
 export default function RootLayout({
@@ -37,12 +53,15 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-white dark:bg-slate-950 text-foreground">
-        <Providers>{children}</Providers>
+      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );
 }
+
 

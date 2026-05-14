@@ -35,41 +35,23 @@ async def send_ai_message(
     db: AsyncSession = Depends(get_db)
 ):
     """Send message to AI coach and get response."""
+    from backend.services.ai_service import ai_service
+    
     session = await db.get(AISession, session_id)
     if not session:
         raise ResourceNotFoundException("AI session not found")
 
-    # TODO: Integrate with OpenAI API
-    ai_response = {
+    ai_response = await ai_service.get_voice_coach_response(
+        request.message, 
+        [], # History would be fetched from DB normally
+        {"first_name": "Member"}
+    )
+
+    return {
         "id": session_id,
         "user_message": request.message,
-        "ai_response": "Great! Let's work on your fitness goals.",
+        "ai_response": ai_response,
         "timestamp": str(__import__('datetime').datetime.utcnow()),
-    }
-
-    return ai_response
-
-
-@router.get("/exercise-recommendations/{member_id}")
-async def get_exercise_recommendations(member_id: int, db: AsyncSession = Depends(get_db)):
-    """Get AI-powered exercise recommendations."""
-    # TODO: Implement AI recommendation engine with LangChain
-    return {
-        "member_id": member_id,
-        "recommendations": [
-            {
-                "exercise": "Bench Press",
-                "sets": 4,
-                "reps": 8,
-                "reason": "Target chest development based on your goals"
-            },
-            {
-                "exercise": "Squats",
-                "sets": 4,
-                "reps": 10,
-                "reason": "Build leg strength and power"
-            }
-        ]
     }
 
 
@@ -80,56 +62,21 @@ async def generate_personalized_workout(
     db: AsyncSession = Depends(get_db)
 ):
     """Generate a personalized workout using AI."""
-    # TODO: Use OpenAI + LangChain to generate personalized workouts
-    return {
-        "member_id": member_id,
-        "goal": goal,
-        "workout": {
-            "name": "AI-Generated Strength Training",
-            "duration_minutes": 60,
-            "exercises": [
-                {
-                    "name": "Warm-up Cardio",
-                    "duration": "5 minutes",
-                    "type": "cardio"
-                },
-                {
-                    "name": "Bench Press",
-                    "sets": 4,
-                    "reps": 8,
-                    "type": "strength"
-                }
-            ]
-        }
-    }
+    from backend.services.workout_service import workout_service
+    workout = await workout_service.create_personalized_workout(db, member_id, goal)
+    return workout
 
 
 @router.post("/nutrition-plan/{member_id}")
 async def generate_nutrition_plan(
     member_id: int,
     goal: str = "muscle_gain",
-    calories_target: int = 2500,
     db: AsyncSession = Depends(get_db)
 ):
     """Generate personalized nutrition plan using AI."""
-    # TODO: Implement nutrition planning with OpenAI
-    return {
-        "member_id": member_id,
-        "goal": goal,
-        "calories_target": calories_target,
-        "macros": {
-            "protein_g": 200,
-            "carbs_g": 250,
-            "fat_g": 80
-        },
-        "meal_plan": [
-            {
-                "meal": "Breakfast",
-                "foods": ["Eggs", "Oatmeal", "Banana"],
-                "calories": 500
-            }
-        ]
-    }
+    from backend.services.nutrition_service import nutrition_service
+    plan = await nutrition_service.generate_meal_plan(db, member_id, goal)
+    return plan
 
 
 @router.post("/posture-analysis/{workout_id}")
@@ -139,22 +86,9 @@ async def analyze_workout_posture(
     db: AsyncSession = Depends(get_db)
 ):
     """Analyze posture during workout using pose detection."""
-    # TODO: Integrate MediaPipe pose detection
-    return {
-        "workout_id": workout_id,
-        "posture_score": 85.5,
-        "issues_detected": [
-            {
-                "issue": "Slight forward lean",
-                "severity": "low",
-                "correction": "Keep your chest up"
-            }
-        ],
-        "form_tips": [
-            "Maintain neutral spine",
-            "Engage core throughout movement"
-        ]
-    }
+    from backend.services.ai_service import ai_service
+    analysis = await ai_service.analyze_pose_landmarks(frame_data or [], "squat")
+    return analysis
 
 
 @router.get("/injury-prediction/{member_id}")

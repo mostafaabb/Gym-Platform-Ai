@@ -1,243 +1,92 @@
-import json
-from typing import Optional, List
-from datetime import datetime
 import logging
+import json
+from typing import List, Dict, Any, Optional
+from datetime import datetime
 
+from openai import AsyncOpenAI
+from backend.core.config import get_settings
+
+settings = get_settings()
 logger = logging.getLogger(__name__)
 
+class AIService:
+    def __init__(self):
+        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.model = settings.OPENAI_MODEL
 
-class AICoachService:
-    """Service for AI voice coaching."""
+    async def get_voice_coach_response(
+        self, 
+        user_message: str, 
+        history: List[Dict[str, str]],
+        member_context: Dict[str, Any]
+    ) -> str:
+        """Get a conversational response from the AI coach."""
+        system_prompt = f"""
+        You are 'GymFlow AI', an elite personal trainer and motivational coach.
+        You are currently coaching a member named {member_context.get('first_name', 'Member')}.
+        Goal: {member_context.get('fitness_goal', 'General Fitness')}
+        Experience: {member_context.get('experience_level', 'Beginner')}
+        
+        Guidelines:
+        1. Be concise, motivational, and professional.
+        2. Give specific cues for exercises (e.g., 'chest up', 'drive through heels').
+        3. If the user mentions pain, advise them to stop and check their form.
+        4. Focus on progressive overload and recovery.
+        5. Speak as if you are in a live session. Keep responses under 50 words.
+        """
+        
+        messages = [{"role": "system", "content": system_prompt}]
+        messages.extend(history[-5:]) # Keep last 5 messages for context
+        messages.append({"role": "user", "content": user_message})
 
-    SYSTEM_PROMPT = """You are GymFlow AI, an expert fitness coach with years of experience.
-    You help users with:
-    - Workout advice and guidance
-    - Exercise form correction
-    - Progressive overload strategies
-    - Recovery and nutrition tips
-    - Motivation and goal setting
-
-    Be conversational, supportive, and data-driven. Ask clarifying questions when needed.
-    Keep responses concise but informative."""
-
-    @staticmethod
-    async def process_voice_input(message: str, session_context: dict) -> dict:
-        """Process user voice input and generate coaching response."""
         try:
-            # In production, integrate with LangChain + OpenAI
-            response = await AICoachService._generate_response(message, session_context)
-            return {
-                "success": True,
-                "response": response,
-                "timestamp": datetime.utcnow().isoformat()
-            }
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=150
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            logger.error(f"AI processing error: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
-            }
+            logger.error(f"AI Service Error: {e}")
+            return "I'm having a slight connection issue, but keep up the great work! Focus on your breathing."
 
-    @staticmethod
-    async def _generate_response(message: str, context: dict) -> str:
-        """Generate AI response using LangChain + OpenAI."""
-        # Placeholder - integrate with LangChain
-        responses = {
-            "chest": "Great choice! For chest day, I recommend starting with bench press for 4 sets of 6-8 reps. What's your current bench press 1RM?",
-            "legs": "Leg day is crucial for overall strength. Let's start with squats or deadlifts. How many days have you rested since your last leg session?",
-            "back": "Back workouts are essential. Heavy rows are your best friend. What rowing variation are you most comfortable with?",
-            "workout": "Tell me about your current fitness level and goals. Are you looking to build muscle, lose weight, or increase strength?",
-        }
+    async def generate_workout_plan(self, member_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate a personalized weekly workout plan."""
+        prompt = f"""
+        Generate a detailed 7-day workout plan for a member with:
+        Goal: {member_data.get('goal')}
+        Experience: {member_data.get('experience')}
+        Injuries: {member_data.get('injuries', 'None')}
+        Available Days: 5
+        
+        Return the result as a JSON object with:
+        - name: Plan title
+        - weekly_structure: Object mapping days to focus
+        - daily_workouts: Array of objects with name, duration, and exercise list (name, sets, reps, notes)
+        """
+        
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            logger.error(f"Workout Generation Error: {e}")
+            return {"error": "Failed to generate plan"}
 
-        message_lower = message.lower()
-        for key, value in responses.items():
-            if key in message_lower:
-                return value
-
-        return "That's interesting! Could you tell me more about your fitness goals and current training experience?"
-
-    @staticmethod
-    async def generate_workout_plan(member_profile: dict) -> dict:
-        """Generate personalized workout plan using AI."""
+    async def analyze_pose_landmarks(self, landmarks: List[Dict[str, float]], exercise: str) -> Dict[str, Any]:
+        """Analyze MediaPipe landmarks to detect form errors."""
+        # This would ideally be a dedicated logic module, but we can use LLM for reasoning
+        # or better yet, a specialized computer vision function.
+        # For now, we simulate form analysis.
+        
         return {
-            "plan_type": "Personalized Progressive Program",
-            "duration_weeks": 12,
-            "days_per_week": 4,
-            "exercises": [
-                {"name": "Bench Press", "sets": 4, "reps": "6-8", "focus": "strength"},
-                {"name": "Rows", "sets": 4, "reps": "6-8", "focus": "strength"},
-                {"name": "Squats", "sets": 4, "reps": "8-10", "focus": "hypertrophy"},
-                {"name": "Deadlifts", "sets": 3, "reps": "5", "focus": "strength"},
-                {"name": "Pull-ups", "sets": 3, "reps": "max", "focus": "strength"},
-            ],
-            "rest_days": 3,
-            "progressive_overload": "Add 5lbs weekly",
-            "estimated_calories": 2500
+            "score": 92.0,
+            "alerts": [],
+            "feedback": "Great form! Keep your back straight."
         }
 
-    @staticmethod
-    async def analyze_workout_form(exercise_name: str, form_data: dict) -> dict:
-        """Analyze exercise form and provide corrections."""
-        return {
-            "exercise": exercise_name,
-            "overall_score": 85,
-            "form_checks": {
-                "spine_alignment": "Good",
-                "joint_angle": "Correct",
-                "range_of_motion": "Full",
-                "symmetry": "Balanced"
-            },
-            "corrections": [
-                "Slightly more chest up during descent",
-                "Keep elbows closer to body"
-            ],
-            "tips": "You're doing great! Keep this form consistent."
-        }
-
-
-class PoseDetectionService:
-    """Service for real-time pose detection and analysis."""
-
-    SUPPORTED_EXERCISES = [
-        "push_up",
-        "squat",
-        "deadlift",
-        "bench_press",
-        "pull_up",
-        "lunge",
-        "shoulder_press"
-    ]
-
-    @staticmethod
-    async def detect_exercise(frame_data: bytes) -> dict:
-        """Detect exercise from frame."""
-        # Placeholder for MediaPipe integration
-        return {
-            "detected_exercise": "push_up",
-            "confidence": 0.95,
-            "pose_landmarks": [],
-            "timestamp": datetime.utcnow().isoformat()
-        }
-
-    @staticmethod
-    async def analyze_form(landmarks: List, exercise: str) -> dict:
-        """Analyze pose landmarks for form correction."""
-        return {
-            "exercise": exercise,
-            "form_score": 88,
-            "issues": [
-                "Elbows not at 90 degrees",
-                "Hip position slightly off"
-            ],
-            "recommendations": [
-                "Lower chest closer to ground",
-                "Keep back straight throughout movement"
-            ],
-            "rep_completed": True,
-            "rep_count": 1
-        }
-
-    @staticmethod
-    async def count_reps(frame_sequence: List[dict], exercise: str) -> dict:
-        """Count repetitions from frame sequence."""
-        return {
-            "exercise": exercise,
-            "rep_count": 10,
-            "reps_data": [
-                {"rep": 1, "time": 2.3, "form_score": 90},
-                {"rep": 2, "time": 4.5, "form_score": 88},
-            ],
-            "average_form_score": 89,
-            "rest_needed": False
-        }
-
-    @staticmethod
-    async def detect_injury_risk(landmarks: List, exercise: str, historical_form: List[dict]) -> dict:
-        """Detect potential injury risks."""
-        return {
-            "exercise": exercise,
-            "risk_level": "low",
-            "risk_factors": [],
-            "recommendations": [
-                "Continue with good form",
-                "Stay hydrated",
-                "Warm up properly for next set"
-            ],
-            "safe_to_continue": True
-        }
-
-
-class NutritionAIService:
-    """Service for AI nutrition recommendations."""
-
-    @staticmethod
-    async def generate_meal_plan(member_profile: dict) -> dict:
-        """Generate AI meal plan."""
-        return {
-            "duration_days": 7,
-            "daily_calories": 2500,
-            "macros": {
-                "protein_g": 200,
-                "carbs_g": 300,
-                "fat_g": 85
-            },
-            "meals": [
-                {
-                    "name": "Breakfast",
-                    "foods": ["Oatmeal", "Eggs", "Berries"],
-                    "calories": 600,
-                    "macros": {"protein": 25, "carbs": 80, "fat": 15}
-                },
-                {
-                    "name": "Lunch",
-                    "foods": ["Chicken Breast", "Brown Rice", "Broccoli"],
-                    "calories": 700,
-                    "macros": {"protein": 50, "carbs": 80, "fat": 10}
-                },
-            ],
-            "hydration": "3-4 liters per day",
-            "supplements": ["Whey Protein", "Creatine", "Vitamins"]
-        }
-
-    @staticmethod
-    async def analyze_nutrition_log(nutrition_data: dict) -> dict:
-        """Analyze nutrition log and provide feedback."""
-        return {
-            "daily_totals": nutrition_data,
-            "macros_ratio": {
-                "protein_percent": 40,
-                "carbs_percent": 45,
-                "fat_percent": 15
-            },
-            "feedback": "Good macro balance! Increase water intake.",
-            "suggestions": [
-                "Add more vegetables for micronutrients",
-                "Consider a pre-workout carb source",
-                "Post-workout protein timing is important"
-            ]
-        }
-
-    @staticmethod
-    async def recommend_foods(goal: str, restrictions: List[str]) -> dict:
-        """Recommend foods based on goal and restrictions."""
-        recommendations = {
-            "muscle_gain": [
-                "Chicken Breast", "Salmon", "Eggs", "Greek Yogurt",
-                "Lean Beef", "Cottage Cheese", "Brown Rice", "Sweet Potato"
-            ],
-            "weight_loss": [
-                "Broccoli", "Chicken Breast", "Green Tea", "Almonds",
-                "Blueberries", "Salmon", "Eggs", "Celery"
-            ],
-            "general_health": [
-                "Spinach", "Quinoa", "Olive Oil", "Berries",
-                "Nuts", "Fish", "Legumes", "Vegetables"
-            ]
-        }
-        return {
-            "goal": goal,
-            "restrictions": restrictions,
-            "recommended_foods": recommendations.get(goal, []),
-            "foods_to_avoid": ["Processed Foods", "Sugar", "Trans Fats"]
-        }
+ai_service = AIService()

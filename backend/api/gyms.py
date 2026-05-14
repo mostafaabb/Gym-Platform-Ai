@@ -134,3 +134,16 @@ async def get_gym_members(
 
     members = await member_repo.get_gym_members(db, gym_id)
     return [MemberResponse.model_validate(m) for m in members[skip:skip+limit]]
+
+
+@router.get("/{gym_id}/analytics", tags=["Analytics"])
+async def get_gym_analytics(gym_id: int, db: AsyncSession = Depends(get_db)):
+    """Get business analytics for a gym."""
+    from backend.services.gym_service import gym_service
+    
+    gym = await gym_repo.get(db, gym_id)
+    if not gym:
+        raise ResourceNotFoundException("Gym not found")
+        
+    analytics = await gym_service.get_gym_analytics(db, gym_id)
+    return analytics

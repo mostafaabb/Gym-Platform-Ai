@@ -53,9 +53,9 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["localhost", "127.0.0.1", "*.gymflowai.com", "*"]
+        allowed_hosts=["localhost", "127.0.0.1", "*.gymflowai.com", "*.onrender.com", "*"]
         if settings.ENVIRONMENT == "development"
-        else ["localhost", "127.0.0.1", "*.gymflowai.com"],
+        else ["localhost", "127.0.0.1", "*.gymflowai.com", "*.onrender.com"],
     )
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(AuditLogMiddleware)
@@ -106,7 +106,9 @@ def create_app() -> FastAPI:
             "openapi_url": f"{settings.API_V1_STR}/openapi.json",
         }
 
+    from backend.api import websockets
     app.include_router(api_router)
+    app.include_router(websockets.router)
     return app
 
 

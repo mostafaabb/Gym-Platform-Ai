@@ -86,7 +86,6 @@ class User(Base):
     gym_owner_of = relationship("Gym", back_populates="owner")
     trainers = relationship("Trainer", back_populates="user", foreign_keys="Trainer.user_id")
     members = relationship("Member", back_populates="user", foreign_keys="Member.user_id")
-    gym_memberships = relationship("Membership", back_populates="member")
     audit_logs = relationship("AuditLog", back_populates="user")
     ai_sessions = relationship("AISession", back_populates="user")
     refresh_tokens = relationship("RefreshToken", back_populates="user")
