@@ -1,6 +1,6 @@
 import os
 from functools import lru_cache
-from typing import Optional
+from typing import Optional, Any, Union
 from pydantic_settings import BaseSettings
 from pydantic import Field, field_validator
 
@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SERVER_HOST: str = Field(default="0.0.0.0", validation_alias="SERVER_HOST")
     SERVER_PORT: int = Field(default=8000, validation_alias="SERVER_PORT")
-    BACKEND_CORS_ORIGINS: list[str] = Field(
+    BACKEND_CORS_ORIGINS: Any = Field(
         default=[
             "http://localhost:3000",
             "http://localhost:8080",
@@ -31,7 +31,7 @@ class Settings(BaseSettings):
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v: str | list[str]) -> list[str]:
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, str) and v.startswith("["):
@@ -39,7 +39,8 @@ class Settings(BaseSettings):
             try:
                 return json.loads(v)
             except Exception:
-                return [i.strip() for i in v.strip("[]").replace('"', '').replace("'", "").split(",")]
+                # Fallback for malformed JSON like ["*"] or ['*']
+                return [i.strip().strip('"').strip("'") for i in v.strip("[]").split(",")]
         return v
 
     # Database
