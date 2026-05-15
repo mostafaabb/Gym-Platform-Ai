@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Dumbbell, Loader2, ArrowRight, Github, Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 
@@ -29,29 +30,23 @@ export default function LoginPage() {
       
       const { access_token } = response.data;
       
-      // 2. Store token
+      // 2. Store token in both localStorage and Cookies for maximum reliability
       localStorage.setItem("token", access_token);
+      Cookies.set("token", access_token, { expires: 7, secure: true, sameSite: "strict" });
       
       // 3. Fetch user profile to determine role
       const meResponse = await api.get("/auth/me");
       const userRole = meResponse.data.user.role;
       
-      // 4. Redirect based on role
+      // 4. Redirect based on role using window.location for a hard refresh
       console.log("Logged in as:", userRole);
       
-      switch(userRole) {
-        case "gym_owner":
-          router.push("/dashboard/owner");
-          break;
-        case "trainer":
-          router.push("/dashboard/trainer");
-          break;
-        case "super_admin":
-          router.push("/dashboard/admin");
-          break;
-        default:
-          router.push("/dashboard/member");
-      }
+      let targetPath = "/dashboard/member";
+      if (userRole === "gym_owner") targetPath = "/dashboard/owner";
+      else if (userRole === "trainer") targetPath = "/dashboard/trainer";
+      else if (userRole === "super_admin") targetPath = "/dashboard/admin";
+      
+      window.location.href = targetPath;
     } catch (err: any) {
       console.error("Login error:", err);
       const errorDetail = err.response?.data?.detail;
