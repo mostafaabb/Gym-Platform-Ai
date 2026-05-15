@@ -58,14 +58,22 @@ def create_app() -> FastAPI:
     # we must use a regex or specific origins.
     cors_origins = [str(origin) for origin in settings.BACKEND_CORS_ORIGINS if str(origin) != "*"]
     cors_allow_all = "*" in [str(o) for o in settings.BACKEND_CORS_ORIGINS]
+    
+    # Explicitly add the current frontend to ensure it's always allowed
+    frontend_url = "https://gymflow-frontend-4izm.onrender.com"
+    if frontend_url not in cors_origins:
+        cors_origins.append(frontend_url)
+
+    logger.info(f"CORS Startup: origins={cors_origins}, allow_all={cors_allow_all}")
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
-        allow_origin_regex=".*" if cors_allow_all else None,
+        allow_origin_regex=r"https://.*\.onrender\.com" if cors_allow_all else None,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["*"],
     )
 
     @app.exception_handler(AppException)
