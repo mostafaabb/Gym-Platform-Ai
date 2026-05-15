@@ -41,36 +41,34 @@ const StatCard = ({ icon: Icon, label, value, trend, color }: any) => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
   >
-    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all hover:bg-zinc-900">
+    <div className="card-premium h-full">
       <div className="flex items-center justify-between">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 ${color}`}>
-          <Icon size={20} />
+        <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/5 ${color} transition-transform hover:scale-110 duration-300`}>
+          <Icon size={24} />
         </div>
-        <div className="flex items-center gap-1 text-xs font-medium text-emerald-400">
+        <div className="flex items-center gap-1 text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full">
           <TrendingUp size={12} />
           {trend}
         </div>
       </div>
-      <div className="mt-4">
-        <p className="text-sm text-zinc-500">{label}</p>
-        <p className="text-2xl font-bold text-white">{value}</p>
+      <div className="mt-5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">{label}</p>
+        <p className="text-3xl font-bold text-white mt-1">{value}</p>
       </div>
     </div>
   </motion.div>
 );
 
 const RecommendedWorkout = ({ title, duration, intensity, image }: any) => (
-  <div className="group relative flex items-center gap-4 rounded-xl border border-white/5 bg-zinc-900/30 p-4 transition-all hover:bg-zinc-900/80">
-    <div className="h-16 w-16 overflow-hidden rounded-lg bg-zinc-800">
-       <div className="flex h-full w-full items-center justify-center text-zinc-600">
-         <Play size={24} />
-       </div>
+  <div className="group relative flex items-center gap-4 rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:bg-white/10 hover:translate-x-1 cursor-pointer">
+    <div className="h-16 w-16 overflow-hidden rounded-xl bg-zinc-800 border border-white/5 flex items-center justify-center text-zinc-500 group-hover:text-primary transition-colors">
+       <Play size={24} className="fill-current" />
     </div>
     <div className="flex-1">
-      <h4 className="font-medium text-white">{title}</h4>
-      <p className="text-xs text-zinc-500">{duration} • {intensity}</p>
+      <h4 className="font-bold text-white group-hover:text-primary transition-colors">{title}</h4>
+      <p className="text-xs text-zinc-500 mt-0.5">{duration} • {intensity}</p>
     </div>
-    <Button size="sm" variant="ghost" className="rounded-full text-zinc-500 group-hover:text-primary">
+    <Button size="sm" variant="ghost" className="rounded-full text-zinc-600 group-hover:text-primary group-hover:bg-primary/10">
       <ChevronRight size={18} />
     </Button>
   </div>
@@ -78,21 +76,21 @@ const RecommendedWorkout = ({ title, duration, intensity, image }: any) => (
 
 export default function MemberDashboard() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 pb-10">
       {/* Welcome Header */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome back, Felix! 👋</h1>
-          <p className="text-zinc-500">You&apos;re 3 workouts away from your weekly goal.</p>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Welcome back, Felix! 👋</h1>
+          <p className="text-zinc-400 mt-1">You&apos;re <span className="text-primary font-bold">3 workouts</span> away from your weekly goal.</p>
         </div>
-        <div className="flex gap-3">
-           <Button className="rounded-xl bg-white text-black hover:bg-zinc-200">
+        <div className="flex gap-4">
+           <Button className="btn-primary h-12 shadow-primary/40">
              <Play className="mr-2 h-4 w-4 fill-current" />
              Start Workout
            </Button>
-           <Button variant="outline" className="rounded-xl border-white/10 bg-zinc-900/50 text-white backdrop-blur-md hover:bg-white/10">
-             <BrainCircuit className="mr-2 h-4 w-4" />
-             Ask AI
+           <Button variant="outline" className="h-12 rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10 backdrop-blur-md">
+             <BrainCircuit className="mr-2 h-4 w-4 text-primary" />
+             Ask AI Coach
            </Button>
         </div>
       </div>
@@ -131,15 +129,18 @@ export default function MemberDashboard() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Activity Chart */}
-        <div className="lg:col-span-2 rounded-2xl border border-white/5 bg-zinc-900/50 p-6 backdrop-blur-sm">
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">Workout Consistency</h3>
-            <select className="bg-transparent text-xs text-zinc-500 outline-none">
+        <div className="lg:col-span-2 card-premium">
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+               <h3 className="text-xl font-bold text-white">Workout Consistency</h3>
+               <p className="text-sm text-zinc-500">Your performance over the last week</p>
+            </div>
+            <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-zinc-400 outline-none focus:border-primary/50">
               <option>Last 7 Days</option>
               <option>Last 30 Days</option>
             </select>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={activityData}>
                 <defs>
@@ -162,14 +163,14 @@ export default function MemberDashboard() {
                   tick={{ fill: '#71717a', fontSize: 12 }}
                 />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#18181b', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                  contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
                   itemStyle={{ color: '#fff' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="value" 
                   stroke="#3b82f6" 
-                  strokeWidth={3}
+                  strokeWidth={4}
                   fillOpacity={1} 
                   fill="url(#colorValue)" 
                 />
@@ -181,29 +182,33 @@ export default function MemberDashboard() {
         {/* Sidebar Cards */}
         <div className="space-y-6">
           {/* AI Coach Suggestion */}
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 backdrop-blur-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4">
-               <Sparkles className="text-primary animate-pulse" size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              AI Insight
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-              &quot;Felix, your recovery score is high (88%). Today is perfect for a high-intensity chest session. Should I prepare your routine?&quot;
-            </p>
-            <div className="mt-6 flex gap-2">
-               <Button className="flex-1 rounded-xl bg-primary text-white hover:bg-primary/90 text-sm">
-                  Let&apos;s go
-               </Button>
-               <Button variant="ghost" className="flex-1 rounded-xl text-zinc-400 hover:text-white text-sm">
-                  Not now
-               </Button>
+          <div className="rounded-3xl border border-primary/30 bg-primary/5 p-8 backdrop-blur-xl relative overflow-hidden group shadow-2xl shadow-primary/10">
+            <div className="absolute -top-10 -right-10 h-40 w-40 bg-primary/20 blur-[80px] rounded-full" />
+            <div className="relative">
+               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-xl shadow-primary/20 mb-6">
+                  <BrainCircuit className="text-white" size={24} />
+               </div>
+               <h3 className="text-xl font-bold text-white tracking-tight">AI Daily Insight</h3>
+               <p className="mt-4 text-sm leading-relaxed text-zinc-300">
+                 &quot;Felix, your recovery score is high (88%). Today is perfect for a high-intensity chest session. Should I prepare your routine?&quot;
+               </p>
+               <div className="mt-8 flex gap-3">
+                  <Button className="flex-1 btn-primary text-sm h-11">
+                     Let&apos;s go
+                  </Button>
+                  <Button variant="ghost" className="flex-1 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 text-sm h-11">
+                     Skip
+                  </Button>
+               </div>
             </div>
           </div>
 
           {/* Recommended Workouts */}
-          <div className="rounded-2xl border border-white/5 bg-zinc-900/50 p-6 backdrop-blur-sm">
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">Recommended for You</h3>
+          <div className="card-premium">
+            <div className="flex items-center justify-between mb-6">
+               <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Recommended</h3>
+               <Sparkles className="text-primary animate-pulse" size={18} />
+            </div>
             <div className="space-y-4">
               <RecommendedWorkout 
                 title="Hypertrophy Chest" 
@@ -221,45 +226,51 @@ export default function MemberDashboard() {
                 intensity="Extreme"
               />
             </div>
-            <Button variant="ghost" className="mt-4 w-full text-xs text-primary">
-              View All Workouts
-              <ArrowUpRight className="ml-1" size={14} />
+            <Button variant="ghost" className="mt-6 w-full text-sm text-primary hover:bg-primary/5 group">
+              View All Routines
+              <ArrowUpRight className="ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" size={16} />
             </Button>
           </div>
         </div>
       </div>
       
       {/* Bottom Row - Recent Activity */}
-      <div className="rounded-2xl border border-white/5 bg-zinc-900/50 p-6 backdrop-blur-sm">
-         <h3 className="mb-6 text-lg font-semibold text-white">Recent Workouts</h3>
-         <div className="space-y-1">
+      <div className="card-premium">
+         <div className="mb-8 flex items-center justify-between">
+            <div>
+               <h3 className="text-xl font-bold text-white">Recent Training History</h3>
+               <p className="text-sm text-zinc-500">Your last 3 gym sessions</p>
+            </div>
+            <Button variant="outline" className="rounded-xl border-white/10 text-xs px-4 h-9">View Full History</Button>
+         </div>
+         <div className="space-y-2">
             {[
               { name: "Full Body Blast", date: "Yesterday, 6:30 PM", calories: "640 kcal", duration: "55m", score: "92" },
               { name: "Morning Yoga", date: "Oct 12, 8:00 AM", calories: "210 kcal", duration: "30m", score: "98" },
               { name: "Leg Power Drills", date: "Oct 10, 5:15 PM", calories: "780 kcal", duration: "70m", score: "85" },
             ].map((workout, i) => (
-              <div key={i} className="flex items-center justify-between rounded-xl p-4 transition-colors hover:bg-white/5">
-                 <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-zinc-400">
-                       <Dumbbell size={18} />
+              <div key={i} className="flex items-center justify-between rounded-2xl p-5 transition-all hover:bg-white/5 group border border-transparent hover:border-white/5 cursor-pointer">
+                 <div className="flex items-center gap-5">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-400 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                       <Dumbbell size={22} />
                     </div>
                     <div>
-                       <p className="font-medium text-white">{workout.name}</p>
-                       <p className="text-xs text-zinc-500">{workout.date}</p>
+                       <p className="font-bold text-white group-hover:text-primary transition-colors">{workout.name}</p>
+                       <p className="text-xs text-zinc-500 mt-0.5">{workout.date}</p>
                     </div>
                  </div>
-                 <div className="flex items-center gap-8">
+                 <div className="flex items-center gap-12">
                     <div className="hidden text-right md:block">
-                       <p className="text-sm font-medium text-zinc-300">{workout.calories}</p>
-                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Calories</p>
+                       <p className="text-sm font-bold text-zinc-300">{workout.calories}</p>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Energy</p>
                     </div>
                     <div className="hidden text-right md:block">
-                       <p className="text-sm font-medium text-zinc-300">{workout.duration}</p>
-                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Duration</p>
+                       <p className="text-sm font-bold text-zinc-300">{workout.duration}</p>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Time</p>
                     </div>
-                    <div className="text-right">
-                       <p className="text-sm font-bold text-emerald-400">{workout.score}%</p>
-                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest">Form</p>
+                    <div className="text-right bg-emerald-400/10 px-4 py-2 rounded-xl border border-emerald-400/20">
+                       <p className="text-sm font-black text-emerald-400">{workout.score}%</p>
+                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Score</p>
                     </div>
                  </div>
               </div>

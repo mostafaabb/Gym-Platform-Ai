@@ -59,43 +59,50 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Button>
         </div>
 
-        <nav className="mt-6 space-y-1 px-3">
+        <nav className="mt-6 space-y-2 px-3">
           {sidebarItems.map((item) => (
             <Link key={item.href} href={item.href}>
               <div className={cn(
-                "group flex items-center rounded-xl px-3 py-3 transition-all duration-200",
+                "group flex items-center rounded-xl px-4 py-3.5 transition-all duration-300",
                 pathname === item.href 
-                  ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                  ? "bg-primary text-white shadow-xl shadow-primary/30" 
                   : "text-zinc-500 hover:bg-white/5 hover:text-white"
               )}>
                 <item.icon size={20} className={cn(
-                  "shrink-0",
+                  "shrink-0 transition-transform duration-300 group-hover:scale-110",
                   pathname === item.href ? "text-white" : "group-hover:text-primary"
                 )} />
                 {!isCollapsed && (
-                  <span className="ml-3 font-medium text-sm">{item.label}</span>
+                  <span className="ml-3 font-semibold text-sm tracking-tight">{item.label}</span>
                 )}
               </div>
             </Link>
           ))}
         </nav>
 
-        <div className="absolute bottom-6 w-full px-3">
+        <div className="absolute bottom-8 w-full px-4">
           <Link href="/dashboard/member/profile">
             <div className={cn(
-              "flex items-center rounded-xl px-3 py-3 transition-colors text-zinc-500 hover:bg-white/5 hover:text-white",
+              "flex items-center rounded-xl px-4 py-3 transition-all duration-200 text-zinc-500 hover:bg-white/5 hover:text-white group",
               isCollapsed ? "justify-center" : ""
             )}>
-              <User size={20} />
-              {!isCollapsed && <span className="ml-3 text-sm font-medium">Profile</span>}
+              <User size={20} className="group-hover:text-primary transition-colors" />
+              {!isCollapsed && <span className="ml-3 text-sm font-medium">Profile Settings</span>}
             </div>
           </Link>
-          <button className={cn(
-            "mt-1 flex w-full items-center rounded-xl px-3 py-3 text-zinc-500 transition-colors hover:bg-red-500/10 hover:text-red-500",
-            isCollapsed ? "justify-center" : ""
-          )}>
-            <LogOut size={20} />
-            {!isCollapsed && <span className="ml-3 text-sm font-medium">Logout</span>}
+          <button 
+            onClick={() => {
+              import("js-cookie").then(c => c.default.remove("access_token"));
+              localStorage.removeItem("token");
+              window.location.href = "/auth/login";
+            }}
+            className={cn(
+              "mt-2 flex w-full items-center rounded-xl px-4 py-3 text-zinc-500 transition-all duration-200 hover:bg-red-500/10 hover:text-red-500 group",
+              isCollapsed ? "justify-center" : ""
+            )}
+          >
+            <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+            {!isCollapsed && <span className="ml-3 text-sm font-medium">Log out</span>}
           </button>
         </div>
         </div>
