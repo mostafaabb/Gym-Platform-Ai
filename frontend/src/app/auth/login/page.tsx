@@ -21,16 +21,37 @@ export default function LoginPage() {
     setError(null);
     
     try {
+      // 1. Authenticate
       const response = await api.post("/auth/login", {
         email: email,
         password: password
       });
       
-      // Store token in local storage
-      localStorage.setItem("token", response.data.access_token);
+      const { access_token } = response.data;
       
-      // Redirect to member dashboard
-      router.push("/dashboard/member");
+      // 2. Store token
+      localStorage.setItem("token", access_token);
+      
+      // 3. Fetch user profile to determine role
+      const meResponse = await api.get("/auth/me");
+      const userRole = meResponse.data.user.role;
+      
+      // 4. Redirect based on role
+      console.log("Logged in as:", userRole);
+      
+      switch(userRole) {
+        case "gym_owner":
+          router.push("/dashboard/owner");
+          break;
+        case "trainer":
+          router.push("/dashboard/trainer");
+          break;
+        case "super_admin":
+          router.push("/dashboard/admin");
+          break;
+        default:
+          router.push("/dashboard/member");
+      }
     } catch (err: any) {
       console.error("Login error:", err);
       const errorDetail = err.response?.data?.detail;
