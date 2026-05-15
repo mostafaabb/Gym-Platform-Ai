@@ -18,7 +18,22 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SERVER_HOST: str = Field(default="0.0.0.0", validation_alias="SERVER_HOST")
     SERVER_PORT: int = Field(default=8000, validation_alias="SERVER_PORT")
-    BACKEND_CORS_ORIGINS: list[str] = Field(default=["http://localhost:3000", "http://localhost:8080"], validation_alias="BACKEND_CORS_ORIGINS")
+    BACKEND_CORS_ORIGINS: list[str] = Field(
+        default=["http://localhost:3000", "http://localhost:8080"],
+        validation_alias="BACKEND_CORS_ORIGINS",
+    )
+
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str]:
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",")]
+        elif isinstance(v, (list, str)):
+            import json
+            if isinstance(v, str):
+                v = json.loads(v)
+            return v
+        return v
 
     # Database
     DATABASE_URL: str = Field(default="postgresql://gymflow:password@localhost:5432/gymflow", validation_alias="DATABASE_URL")

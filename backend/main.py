@@ -44,6 +44,16 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
+    app.add_middleware(AuditLogMiddleware)
+    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["localhost", "127.0.0.1", "*.gymflowai.com", "*.onrender.com", "*"]
+        if settings.ENVIRONMENT == "development"
+        else ["localhost", "127.0.0.1", "*.gymflowai.com", "*.onrender.com"],
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.BACKEND_CORS_ORIGINS,
@@ -51,16 +61,6 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.add_middleware(
-        TrustedHostMiddleware,
-        allowed_hosts=["localhost", "127.0.0.1", "*.gymflowai.com", "*.onrender.com", "*"]
-        if settings.ENVIRONMENT == "development"
-        else ["localhost", "127.0.0.1", "*.gymflowai.com", "*.onrender.com"],
-    )
-    app.add_middleware(GZipMiddleware, minimum_size=1000)
-    app.add_middleware(AuditLogMiddleware)
-    app.add_middleware(RateLimitMiddleware)
-    app.add_middleware(SecurityHeadersMiddleware)
 
     @app.exception_handler(AppException)
     async def app_exception_handler(request: Request, exc: AppException):

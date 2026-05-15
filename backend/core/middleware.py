@@ -66,6 +66,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+from fastapi import Request, Response, status, BackgroundTasks
+
+# ... existing imports ...
+
 class AuditLogMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self,
@@ -87,24 +91,52 @@ class AuditLogMiddleware(BaseHTTPMiddleware):
         authorization = request.headers.get("authorization")
         if authorization and authorization.lower().startswith("bearer "):
             try:
-                payload = decode_token(authorization.split(" ", 1)[1])
-                user_id = int(payload["sub"])
+                token = authorization.split(" ", 1)[1]
+                # We use the existing decode_token but we don't want it to raise
+                # errors here if the token is just expired or invalid
+                from jose import jwt
+                payload = jwt.get_unverified_claims(token)
+                if payload and "sub" in payload:
+                    user_id = int(payload["sub"])
             except Exception:
                 user_id = None
 
-        async with async_session_maker() as session:
-            session.add(
-                AuditLog(
-                    user_id=user_id,
-                    action=f"{request.method} {request.url.path}",
-                    resource_type=request.url.path.split("/")[-2] if "/" in request.url.path else "api",
-                    resource_id=None,
-                    ip_address=request.headers.get("x-forwarded-for")
-                    or (request.client.host if request.client else None),
-                    user_agent=request.headers.get("user-agent"),
-                    new_values={"status_code": response.status_code},
-                )
-            )
-            await session.commit()
+        # Prepare log data
+        log_data = {
+            "user_id": user_id,
+            "action": f"{request.method} {request.url.path}",
+            "resource_type": request.url.path.split("/")[-2] if "/" in request.url.path else "api",
+            "ip_address": request.headers.get("x-forwarded-for")
+            or (request.client.host if request.client else None),
+            "user_agent": request.headers.get("user-agent"),
+            "status_code": response.status_code,
+        }
+
+        # Define the background logging task
+        async def log_to_db(data: dict):
+            try:
+                async with async_session_maker() as session:
+                    session.add(
+                        AuditLog(
+                            user_id=data["user_id"],
+                            action=data["action"],
+                            resource_type=data["resource_type"],
+                            resource_id=None,
+                            ip_address=data["ip_address"],
+                            user_agent=data["user_agent"],
+                            new_values={"status_code": data["status_code"]},
+                        )
+                    )
+                    await session.commit()
+            except Exception as e:
+                # Log the error but don't crash the request
+                import logging
+                logging.getLogger(__name__).error(f"Failed to write audit log: {e}")
+
+        # In Starlette BaseHTTPMiddleware, we can't easily add to BackgroundTasks 
+        # of the response because the response is already created. 
+        # However, we can just fire and forget or use a separate task runner.
+        import asyncio
+        asyncio.create_task(log_to_db(log_data))
 
         return response
