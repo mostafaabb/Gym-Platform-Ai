@@ -58,19 +58,18 @@ export default function NutritionPage() {
               <Flame size={120} className="text-orange-500" />
            </div>
            <div className="relative h-48 w-48 flex items-center justify-center">
-              <svg className="h-full w-full" viewBox="0 0 100 100">
+                     <svg className="h-full w-full text-primary" viewBox="0 0 100 100">
                  <circle className="text-zinc-800" strokeWidth="8" stroke="currentColor" fill="transparent" r="42" cx="50" cy="50" />
-                 <motion.circle 
-                   className="text-primary" 
-                   strokeWidth="8" 
-                   strokeDasharray="264" 
-                   initial={{ strokeDashoffset: 264 }}
-                   animate={{ strokeDashoffset: 264 - (264 * 0.65) }}
-                   strokeLinecap="round" 
-                   stroke="currentColor" 
-                   fill="transparent" 
-                   r="42" cx="50" cy="50" 
-                 />
+                         <motion.circle 
+                            strokeWidth="8" 
+                            strokeDasharray="264" 
+                            initial={{ strokeDashoffset: 264 }}
+                            animate={{ strokeDashoffset: 264 - (264 * 0.65) }}
+                            strokeLinecap="round" 
+                            stroke="currentColor" 
+                            fill="transparent" 
+                            r="42" cx="50" cy="50" 
+                         />
               </svg>
               <div className="absolute flex flex-col items-center">
                  <span className="text-4xl font-black text-white">1,620</span>
@@ -95,13 +94,14 @@ export default function NutritionPage() {
                 <div className="mt-8">
                    <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest">{macro.label}</p>
                    <p className="text-2xl font-bold text-white">{macro.value}g <span className="text-sm font-normal text-zinc-600">/ {macro.target}g</span></p>
-                   <div className="mt-4 h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(macro.value / macro.target) * 100}%` }}
-                        className={cn("h-full rounded-full", macro.bg)}
-                      />
-                   </div>
+                            <div className="mt-4 h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                                 <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(macro.value / macro.target) * 100}%` }}
+                                 >
+                                    <div className={cn("h-full rounded-full", macro.bg)} />
+                                 </motion.div>
+                            </div>
                 </div>
              </div>
            ))}

@@ -12,6 +12,7 @@ import {
   Play,
   ArrowUpRight,
   BrainCircuit,
+  Dumbbell,
   MessageSquare
 } from "lucide-react";
 import { 
@@ -39,20 +40,21 @@ const StatCard = ({ icon: Icon, label, value, trend, color }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all hover:bg-zinc-900"
   >
-    <div className="flex items-center justify-between">
-      <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 ${color}`}>
-        <Icon size={20} />
+    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all hover:bg-zinc-900">
+      <div className="flex items-center justify-between">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800 ${color}`}>
+          <Icon size={20} />
+        </div>
+        <div className="flex items-center gap-1 text-xs font-medium text-emerald-400">
+          <TrendingUp size={12} />
+          {trend}
+        </div>
       </div>
-      <div className="flex items-center gap-1 text-xs font-medium text-emerald-400">
-        <TrendingUp size={12} />
-        {trend}
+      <div className="mt-4">
+        <p className="text-sm text-zinc-500">{label}</p>
+        <p className="text-2xl font-bold text-white">{value}</p>
       </div>
-    </div>
-    <div className="mt-4">
-      <p className="text-sm text-zinc-500">{label}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
     </div>
   </motion.div>
 );

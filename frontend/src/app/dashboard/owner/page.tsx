@@ -27,6 +27,8 @@ import {
   Cell
 } from "recharts";
 import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
+
 
 const revenueData = [
   { name: "Jan", total: 4200 },

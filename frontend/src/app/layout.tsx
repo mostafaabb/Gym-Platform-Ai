@@ -27,7 +27,6 @@ export const metadata: Metadata = {
     "GymFlow AI",
   ],
   authors: [{ name: "GymFlow AI Team" }],
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -42,6 +41,12 @@ export const metadata: Metadata = {
     description: "Transform your gym with real-time AI coaching and posture analysis.",
     creator: "@gymflowai",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
