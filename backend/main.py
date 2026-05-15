@@ -54,9 +54,15 @@ def create_app() -> FastAPI:
         if settings.ENVIRONMENT == "development"
         else ["localhost", "127.0.0.1", "*.gymflowai.com", "*.onrender.com"],
     )
+    # Handle CORS origins - if "*" is in origins and credentials are required, 
+    # we must use a regex or specific origins.
+    cors_origins = [str(origin) for origin in settings.BACKEND_CORS_ORIGINS if str(origin) != "*"]
+    cors_allow_all = "*" in [str(o) for o in settings.BACKEND_CORS_ORIGINS]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        allow_origins=cors_origins,
+        allow_origin_regex=".*" if cors_allow_all else None,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

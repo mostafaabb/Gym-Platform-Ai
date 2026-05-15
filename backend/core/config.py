@@ -19,7 +19,13 @@ class Settings(BaseSettings):
     SERVER_HOST: str = Field(default="0.0.0.0", validation_alias="SERVER_HOST")
     SERVER_PORT: int = Field(default=8000, validation_alias="SERVER_PORT")
     BACKEND_CORS_ORIGINS: list[str] = Field(
-        default=["http://localhost:3000", "http://localhost:8080"],
+        default=[
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://127.0.0.1:3000",
+            "https://gymflowai.com",
+            "https://www.gymflowai.com",
+        ],
         validation_alias="BACKEND_CORS_ORIGINS",
     )
 
@@ -28,11 +34,12 @@ class Settings(BaseSettings):
     def assemble_cors_origins(cls, v: str | list[str]) -> list[str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+        elif isinstance(v, str) and v.startswith("["):
             import json
-            if isinstance(v, str):
-                v = json.loads(v)
-            return v
+            try:
+                return json.loads(v)
+            except Exception:
+                return [i.strip() for i in v.strip("[]").replace('"', '').replace("'", "").split(",")]
         return v
 
     # Database
