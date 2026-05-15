@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/auth/login", "/auth/register", "/auth/forgot-password"];
+const PUBLIC_ROUTES = ["/", "/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password"];
 
 // Routes that should only be accessible without authentication
-const AUTH_ONLY_ROUTES = ["/auth/login", "/auth/register", "/auth/forgot-password"];
+const AUTH_ONLY_ROUTES = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password"];
 
 // Protected routes that require authentication
 const PROTECTED_ROUTES = ["/dashboard", "/member", "/admin"];

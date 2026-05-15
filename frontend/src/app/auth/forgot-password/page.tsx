@@ -3,10 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { Dumbbell, Mail, ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import api from "@/lib/api";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
+  const [email, setEmail] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
 
@@ -14,11 +18,19 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await api.post("/auth/forgot-password", { email });
       setIsSubmitted(true);
-    }, 2000);
+      // Wait 3 seconds then redirect to reset page
+      setTimeout(() => {
+        router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+      }, 3000);
+    } catch (err) {
+      console.error("Forgot password failed:", err);
+      alert("Failed to send reset link. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,6 +65,8 @@ export default function ForgotPasswordPage() {
                   <input 
                     type="email" 
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
                     className="w-full h-14 rounded-2xl border border-white/5 bg-white/5 pl-12 pr-4 text-white outline-none focus:border-primary/50 focus:bg-white/10 transition-all"
                   />
