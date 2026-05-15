@@ -94,7 +94,7 @@ export default function MemberDashboard() {
     fetchUser();
   }, []);
 
-  const firstName = userData?.full_name?.split(" ")[0] || "User";
+  const firstName = userData?.first_name || "User";
 
   return (
     <div className="space-y-10 pb-10">
@@ -217,7 +217,7 @@ export default function MemberDashboard() {
                </div>
                <h3 className="text-xl font-bold text-white tracking-tight">AI Daily Insight</h3>
                <p className="mt-4 text-sm leading-relaxed text-zinc-300">
-                 &quot;Felix, your recovery score is high (88%). Today is perfect for a high-intensity chest session. Should I prepare your routine?&quot;
+                 &quot;{firstName}, your recovery score is high (88%). Today is perfect for a high-intensity chest session. Should I prepare your routine?&quot;
                </p>
                <div className="mt-8 flex gap-3">
                   <Button className="flex-1 btn-primary text-sm h-11">
