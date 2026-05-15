@@ -80,27 +80,28 @@ export default function ForgotPasswordPage() {
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="text-center py-6"
             >
-              <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 text-primary mb-6">
-                <Sparkles size={40} />
-              </div>
-              <h2 className="text-2xl font-bold text-white">Check your inbox</h2>
-              <p className="text-zinc-500 mt-4 leading-relaxed">
-                We have sent a password reset link to your email. Please check your spam folder if you don&apos;t see it.
-              </p>
-              <Button 
-                onClick={() => setIsSubmitted(false)}
-                variant="ghost" 
-                className="mt-8 text-primary hover:bg-primary/5"
-              >
-                Try a different email
-              </Button>
-              <div className="mt-6 pt-6 border-t border-white/5">
-                <Link href="/auth/login" className="inline-flex items-center text-sm text-zinc-500 hover:text-white transition-colors">
-                  <ArrowLeft size={16} className="mr-2" />
-                  Return to login
-                </Link>
+              <div className="text-center py-6">
+                <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 text-primary mb-6">
+                  <Sparkles size={40} />
+                </div>
+                <h2 className="text-2xl font-bold text-white">Check your inbox</h2>
+                <p className="text-zinc-500 mt-4 leading-relaxed">
+                  We have sent a password reset link to your email. Please check your spam folder if you don&apos;t see it.
+                </p>
+                <Button 
+                  onClick={() => setIsSubmitted(false)}
+                  variant="ghost" 
+                  className="mt-8 text-primary hover:bg-primary/5"
+                >
+                  Try a different email
+                </Button>
+                <div className="mt-6 pt-6 border-t border-white/5">
+                  <Link href="/auth/login" className="inline-flex items-center text-sm text-zinc-500 hover:text-white transition-colors">
+                    <ArrowLeft size={16} className="mr-2" />
+                    Return to login
+                  </Link>
+                </div>
               </div>
             </motion.div>
           )}
