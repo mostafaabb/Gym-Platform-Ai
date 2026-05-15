@@ -48,7 +48,11 @@ export default function SchedulePage() {
                 </div>
               </div>
             </div>
-            <Button variant="ghost" className="text-zinc-500 group-hover:text-white">
+            <Button 
+              variant="ghost" 
+              className="text-zinc-500 group-hover:text-white"
+              onClick={() => alert("Session Details: " + item.title)}
+            >
               Details
             </Button>
           </div>

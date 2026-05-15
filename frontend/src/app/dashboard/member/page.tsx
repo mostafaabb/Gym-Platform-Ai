@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
   Activity, 
@@ -84,14 +85,18 @@ export default function MemberDashboard() {
           <p className="text-zinc-400 mt-1">You&apos;re <span className="text-primary font-bold">3 workouts</span> away from your weekly goal.</p>
         </div>
         <div className="flex gap-4">
-           <Button className="btn-primary h-12 shadow-primary/40">
-             <Play className="mr-2 h-4 w-4 fill-current" />
-             Start Workout
-           </Button>
-           <Button variant="outline" className="h-12 rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10 backdrop-blur-md">
-             <BrainCircuit className="mr-2 h-4 w-4 text-primary" />
-             Ask AI Coach
-           </Button>
+           <Link href="/dashboard/member/workouts">
+             <Button className="btn-primary h-12 shadow-primary/40">
+               <Play className="mr-2 h-4 w-4 fill-current" />
+               Start Workout
+             </Button>
+           </Link>
+           <Link href="/dashboard/member/coach">
+             <Button variant="outline" className="h-12 rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10 backdrop-blur-md">
+               <BrainCircuit className="mr-2 h-4 w-4 text-primary" />
+               Ask AI Coach
+             </Button>
+           </Link>
         </div>
       </div>
 
@@ -226,10 +231,12 @@ export default function MemberDashboard() {
                 intensity="Extreme"
               />
             </div>
-            <Button variant="ghost" className="mt-6 w-full text-sm text-primary hover:bg-primary/5 group">
-              View All Routines
-              <ArrowUpRight className="ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" size={16} />
-            </Button>
+            <Link href="/dashboard/member/workouts">
+              <Button variant="ghost" className="mt-6 w-full text-sm text-primary hover:bg-primary/5 group">
+                View All Routines
+                <ArrowUpRight className="ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" size={16} />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -241,7 +248,9 @@ export default function MemberDashboard() {
                <h3 className="text-xl font-bold text-white">Recent Training History</h3>
                <p className="text-sm text-zinc-500">Your last 3 gym sessions</p>
             </div>
-            <Button variant="outline" className="rounded-xl border-white/10 text-xs px-4 h-9">View Full History</Button>
+            <Link href="/dashboard/member/analytics">
+              <Button variant="outline" className="rounded-xl border-white/10 text-xs px-4 h-9 hover:bg-white/5 transition-colors">View Full History</Button>
+            </Link>
          </div>
          <div className="space-y-2">
             {[

@@ -13,7 +13,10 @@ export default function WorkoutsPage() {
           <h1 className="text-3xl font-bold text-white tracking-tight">Your Workouts</h1>
           <p className="text-zinc-500">Manage and track your elite training routines.</p>
         </div>
-        <Button className="rounded-xl bg-primary text-white hover:bg-primary/90">
+        <Button 
+          className="rounded-xl bg-primary text-white hover:bg-primary/90"
+          onClick={() => alert("Workout Builder coming soon!")}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Create New Routine
         </Button>
@@ -29,7 +32,11 @@ export default function WorkoutsPage() {
             className="w-full rounded-xl border border-white/5 bg-zinc-900/50 py-3 pl-12 pr-4 text-white outline-none focus:border-primary/50"
           />
         </div>
-        <Button variant="outline" className="rounded-xl border-white/5 bg-zinc-900/50 text-zinc-400">
+        <Button 
+          variant="outline" 
+          className="rounded-xl border-white/5 bg-zinc-900/50 text-zinc-400"
+          onClick={() => alert("Filter options coming soon!")}
+        >
           <Filter className="mr-2 h-4 w-4" />
           Filter
         </Button>
@@ -42,7 +49,11 @@ export default function WorkoutsPage() {
         </div>
         <h3 className="text-xl font-semibold text-white">No workouts found</h3>
         <p className="mt-2 text-zinc-500">Start your journey by creating your first workout plan.</p>
-        <Button variant="ghost" className="mt-6 text-primary hover:text-primary/80">
+        <Button 
+          variant="ghost" 
+          className="mt-6 text-primary hover:text-primary/80"
+          onClick={() => alert("Browsing templates coming soon!")}
+        >
           Browse Templates
         </Button>
       </div>
