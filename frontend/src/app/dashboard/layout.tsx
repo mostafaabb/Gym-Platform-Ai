@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <motion.aside
         animate={{ width: isCollapsed ? 80 : 260 }}
       >
-        <div className="fixed left-0 top-0 z-40 h-full border-r border-white/5 bg-zinc-950/50 backdrop-blur-xl">
+        <div className="h-full border-r border-white/5 bg-zinc-950/50 backdrop-blur-xl">
           <div className="flex h-20 items-center justify-between px-6">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
@@ -102,10 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </motion.aside>
 
       {/* Main Content */}
-      <main className={cn(
-        "flex-1 transition-all duration-300",
-        isCollapsed ? "pl-20" : "pl-[260px]"
-      )}>
+      <main className="flex-1 min-w-0">
         <header className="flex h-20 items-center justify-between border-b border-white/5 bg-zinc-950/20 px-8 backdrop-blur-md">
           <div className="flex items-center gap-4">
              <Button variant="ghost" size="sm" className="md:hidden">
