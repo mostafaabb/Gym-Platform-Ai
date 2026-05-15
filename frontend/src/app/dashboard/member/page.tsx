@@ -26,6 +26,7 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { Button } from "@/components/ui/Button";
+import api from "@/lib/api";
 
 const activityData = [
   { name: "Mon", value: 45 },
@@ -76,12 +77,33 @@ const RecommendedWorkout = ({ title, duration, intensity, image }: any) => (
 );
 
 export default function MemberDashboard() {
+  const [userData, setUserData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await api.get("/auth/me");
+        setUserData(response.data.user);
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const firstName = userData?.full_name?.split(" ")[0] || "User";
+
   return (
     <div className="space-y-10 pb-10">
       {/* Welcome Header */}
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">Welcome back, Felix! 👋</h1>
+          <h1 className="text-4xl font-bold text-white tracking-tight">
+            {loading ? "Loading..." : `Welcome back, ${firstName}! 👋`}
+          </h1>
           <p className="text-zinc-400 mt-1">You&apos;re <span className="text-primary font-bold">3 workouts</span> away from your weekly goal.</p>
         </div>
         <div className="flex gap-4">
