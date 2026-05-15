@@ -32,7 +32,7 @@ export default function LoginPage() {
       
       // 2. Store token in both localStorage and Cookies for maximum reliability
       localStorage.setItem("token", access_token);
-      Cookies.set("token", access_token, { expires: 7, secure: true, sameSite: "strict" });
+      Cookies.set("access_token", access_token, { expires: 7, secure: true, sameSite: "strict" });
       
       // 3. Fetch user profile to determine role
       const meResponse = await api.get("/auth/me");

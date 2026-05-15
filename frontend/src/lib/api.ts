@@ -14,7 +14,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Try to get token from cookies first, then localStorage
-    const token = Cookies.get("token") || (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+    const token = Cookies.get("access_token") || (typeof window !== "undefined" ? localStorage.getItem("token") : null);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
