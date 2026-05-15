@@ -1,7 +1,7 @@
 services:
   # Backend FastAPI Service
   - type: web
-    name: gymflow-backend
+    name: gymflow-api-elite
     env: docker
     dockerContext: .
     dockerfilePath: Dockerfile.backend
@@ -50,7 +50,7 @@ services:
     healthCheckPath: /
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        value: "https://gymflow-backend.onrender.com/api/v1"
+        value: "https://gymflow-api-elite.onrender.com/api/v1"
       - key: NODE_VERSION
         value: 20
 
