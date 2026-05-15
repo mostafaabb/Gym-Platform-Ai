@@ -32,9 +32,9 @@ export default function ForgotPasswordPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10"
       >
-        <div className="card-premium p-10 space-y-8">
+        <div className="w-full max-w-md relative z-10">
+          <div className="card-premium p-10 space-y-8">
           <div className="text-center">
             <Link href="/" className="inline-flex items-center gap-2 group mb-6">
               <Dumbbell className="text-primary group-hover:scale-110 transition-transform" size={32} />
@@ -105,6 +105,7 @@ export default function ForgotPasswordPage() {
             </motion.div>
           )}
         </div>
+      </div>
       </motion.div>
     </div>
   );
