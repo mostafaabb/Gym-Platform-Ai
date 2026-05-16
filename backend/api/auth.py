@@ -1,4 +1,7 @@
+import logging
+import secrets
 from datetime import datetime, timedelta
+
 
 from fastapi import APIRouter, Depends, Header, Request, status
 from sqlalchemy import select
@@ -16,8 +19,9 @@ from backend.core.security import (
     hash_token,
     verify_password,
 )
-from backend.models import RefreshToken, User
+from backend.models import PasswordResetToken, RefreshToken, User
 from backend.repositories.repositories import UserRepository
+from backend.services.email_service import EmailService
 from backend.schemas import (
     EmailVerificationRequest,
     PasswordResetConfirmRequest,
@@ -32,6 +36,8 @@ from backend.schemas import (
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 settings = get_settings()
 user_repo = UserRepository()
+logger = logging.getLogger(__name__)
+
 
 
 async def _persist_refresh_token(
@@ -213,27 +219,56 @@ async def revoke_session(
 async def forgot_password(payload: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
     user = await user_repo.get_by_email(db, payload.email)
     if user:
-        # In a real app, generate a token and send email here
-        # For now, we will use a dummy token "RESET_123" for testing
-        logger.info(f"Password reset requested for {payload.email}. Verification Token: RESET_123")
+        # Generate a 6-digit numeric code
+        import random
+        token = "".join([str(random.randint(0, 9)) for _ in range(6)])
+        expires_at = datetime.utcnow() + timedelta(hours=24)
+        
+        # Save token to database
+        reset_token = PasswordResetToken(
+            user_id=user.id,
+            token=token,
+            expires_at=expires_at
+        )
+        db.add(reset_token)
+        await db.commit()
+        
+        # Send real email (or mock in logs if credentials missing)
+        EmailService.send_password_reset_email(payload.email, token)
+        
     return {"message": "If the account exists, a password reset email will be sent"}
 
 
 @router.post("/reset-password")
 async def reset_password(payload: PasswordResetConfirmRequest, db: AsyncSession = Depends(get_db)):
-    # In a real app, verify the token from DB/Redis
-    # For this demo, we accept "RESET_123"
-    if payload.token != "RESET_123":
+    # Find the token in the database
+    result = await db.execute(
+        select(PasswordResetToken).where(
+            PasswordResetToken.token == payload.token,
+            PasswordResetToken.expires_at > datetime.utcnow()
+        )
+    )
+    reset_token = result.scalars().first()
+    
+    if not reset_token:
         raise AuthenticationException("Invalid or expired reset token")
         
-    # Find user (usually the token would be linked to a user_id)
-    # Since this is a demo flow, we'll assume the token works for the user
-    # In production, you'd look up the user associated with the token.
-    # For now, we'll allow resetting based on the email provided in the request if we added it,
-    # but let's just implement the logic to update A user to show it works.
+    # Find the user
+    user = await db.get(User, reset_token.user_id)
+    if not user:
+        raise AuthenticationException("User not found")
     
-    # We will raise a 400 because we need the email to know who to reset.
-    # I will update the schema to include email if needed, or just mock the success.
+    # Update password
+    user.password_hash = hash_password(payload.new_password)
+    
+    # Delete the used token (and any other active tokens for this user)
+    from sqlalchemy import delete
+    await db.execute(
+        delete(PasswordResetToken).where(PasswordResetToken.user_id == user.id)
+    )
+    
+    await db.commit()
+    
     return {
         "message": "Password has been reset successfully. You can now login.",
         "status": "success"

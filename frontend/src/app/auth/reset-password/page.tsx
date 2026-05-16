@@ -66,7 +66,8 @@ function ResetPasswordForm() {
                 required
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                placeholder="RESET_123"
+                placeholder="123456"
+                maxLength={6}
                 className="w-full h-14 rounded-2xl border border-white/5 bg-white/5 pl-12 pr-4 text-white outline-none focus:border-primary/50 focus:bg-white/10 transition-all font-mono tracking-widest"
               />
             </div>
