@@ -1,3 +1,4 @@
+from fastapi import APIRouter
 from backend.api import auth, gyms, workouts, analytics, ai, trainers, nutrition, leaderboard
 
 # Create main router
