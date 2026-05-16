@@ -9,11 +9,11 @@ const AUTH_ONLY_ROUTES = ["/auth/login", "/auth/register", "/auth/forgot-passwor
 // Protected routes that require authentication
 const PROTECTED_ROUTES = ["/dashboard", "/member", "/admin"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("access_token")?.value;
 
-  console.log(`Middleware: ${pathname}, hasToken: ${!!token}`);
+  console.log(`Proxy: ${pathname}, hasToken: ${!!token}`);
 
   // Check if route is public
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
