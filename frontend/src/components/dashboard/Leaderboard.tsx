@@ -43,31 +43,32 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ entries, title = "Gym Leaderb
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
-            className={cn(
+          >
+            <div className={cn(
               "flex items-center justify-between p-3 rounded-2xl transition-all",
               i === 0 ? "bg-primary/10 border border-primary/20" : "hover:bg-white/5"
-            )}
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex h-8 w-8 items-center justify-center shrink-0">
-                {getRankIcon(entry.rank)}
+            )}>
+              <div className="flex items-center gap-4">
+                <div className="flex h-8 w-8 items-center justify-center shrink-0">
+                  {getRankIcon(entry.rank)}
+                </div>
+                <div className="h-10 w-10 rounded-full bg-zinc-800 border border-white/10 overflow-hidden shrink-0">
+                  <img 
+                    src={entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.name}`} 
+                    alt={entry.name} 
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white leading-none">{entry.name}</p>
+                  <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest font-bold">
+                    Form: {entry.avg_form.toFixed(1)}%
+                  </p>
+                </div>
               </div>
-              <div className="h-10 w-10 rounded-full bg-zinc-800 border border-white/10 overflow-hidden shrink-0">
-                <img 
-                  src={entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.name}`} 
-                  alt={entry.name} 
-                />
+              <div className="text-right">
+                <p className="text-sm font-black text-primary">{entry.score}</p>
+                <p className="text-[9px] text-zinc-600 uppercase font-bold">Pts</p>
               </div>
-              <div>
-                <p className="text-sm font-bold text-white leading-none">{entry.name}</p>
-                <p className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest font-bold">
-                  Form: {entry.avg_form.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-black text-primary">{entry.score}</p>
-              <p className="text-[9px] text-zinc-600 uppercase font-bold">Pts</p>
             </div>
           </motion.div>
         ))}
