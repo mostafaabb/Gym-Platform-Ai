@@ -1,5 +1,4 @@
-from fastapi import APIRouter
-from backend.api import auth, gyms, workouts, analytics, ai, trainers, nutrition
+from backend.api import auth, gyms, workouts, analytics, ai, trainers, nutrition, leaderboard
 
 # Create main router
 api_router = APIRouter(prefix="/api/v1")
@@ -12,3 +11,4 @@ api_router.include_router(analytics.router)
 api_router.include_router(ai.router)
 api_router.include_router(trainers.router)
 api_router.include_router(nutrition.router)
+api_router.include_router(leaderboard.router)

@@ -186,6 +186,8 @@ class Member(Base):
     fitness_goal = Column(SQLEnum(FitnessGoalEnum), nullable=True)
     experience_level = Column(SQLEnum(ExperienceLevelEnum), default=ExperienceLevelEnum.BEGINNER)
     injuries = Column(JSON, default=list)
+    form_score_avg = Column(Float, default=0.0)
+    consistency_score = Column(Integer, default=0)
     is_active = Column(Boolean, default=True, index=True)
     join_date = Column(DateTime, default=datetime.utcnow)
 
@@ -751,4 +753,37 @@ class NotificationLog(Base):
 
     __table_args__ = (
         Index("idx_notification_recipient_read", "recipient_id", "is_read"),
+    )
+
+
+# ============== GAMIFICATION & ACHIEVEMENTS ==============
+class Achievement(Base):
+    """Available badges and achievements."""
+    __tablename__ = "achievements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+    description = Column(String(255))
+    icon_url = Column(String(500))
+    category = Column(String(50))  # consistency, strength, form, etc.
+    criteria_json = Column("criteria", JSON, default=dict)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    member_achievements = relationship("MemberAchievement", back_populates="achievement")
+
+
+class MemberAchievement(Base):
+    """Achievements earned by members."""
+    __tablename__ = "member_achievements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    member_id = Column(Integer, ForeignKey("members.id"), nullable=False)
+    achievement_id = Column(Integer, ForeignKey("achievements.id"), nullable=False)
+    unlocked_at = Column(DateTime, default=datetime.utcnow)
+
+    member = relationship("Member")
+    achievement = relationship("Achievement", back_populates="member_achievements")
+
+    __table_args__ = (
+        UniqueConstraint("member_id", "achievement_id", name="uq_member_achievement"),
     )

@@ -109,6 +109,10 @@ async def complete_workout(
     if calories_burned:
         workout.calories_burned = calories_burned
 
+    # Award points and achievements
+    from backend.services.gamification_service import gamification_service
+    await gamification_service.process_workout_completion(db, member_id, workout)
+
     db.add(workout)
     await db.commit()
     await db.refresh(workout)

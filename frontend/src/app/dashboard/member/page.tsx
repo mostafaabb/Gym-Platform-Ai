@@ -9,12 +9,13 @@ import {
   TrendingUp, 
   Clock, 
   ChevronRight,
-  Sparkles,
-  Play,
-  ArrowUpRight,
-  BrainCircuit,
-  Dumbbell,
-  MessageSquare
+  Sparkles, 
+  TrendingUp, 
+  Play, 
+  ChevronRight, 
+  BrainCircuit, 
+  Target, 
+  Award 
 } from "lucide-react";
 import { 
   AreaChart, 
@@ -26,7 +27,9 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { Button } from "@/components/ui/Button";
-import api from "@/lib/api";
+import Leaderboard from "@/components/dashboard/Leaderboard";
+import BodyMap from "@/components/dashboard/BodyMap";
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 const activityData = [
   { name: "Mon", value: 45 },
@@ -61,7 +64,7 @@ const StatCard = ({ icon: Icon, label, value, trend, color }: any) => (
   </motion.div>
 );
 
-const RecommendedWorkout = ({ title, duration, intensity, image }: any) => (
+const RecommendedWorkout = ({ title, duration, intensity }: any) => (
   <div className="group relative flex items-center gap-4 rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:bg-white/10 hover:translate-x-1 cursor-pointer">
     <div className="h-16 w-16 overflow-hidden rounded-xl bg-zinc-800 border border-white/5 flex items-center justify-center text-zinc-500 group-hover:text-primary transition-colors">
        <Play size={24} className="fill-current" />
@@ -77,24 +80,11 @@ const RecommendedWorkout = ({ title, duration, intensity, image }: any) => (
 );
 
 export default function MemberDashboard() {
-  const [userData, setUserData] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await api.get("/auth/me");
-        setUserData(response.data.user);
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const firstName = userData?.first_name || "User";
+  const { data, loading } = useDashboardData();
+  
+  const user = data?.user;
+  const stats = data?.stats;
+  const firstName = user?.first_name || "User";
 
   return (
     <div className="space-y-10 pb-10">
@@ -127,145 +117,122 @@ export default function MemberDashboard() {
         <StatCard 
           icon={Activity} 
           label="Calories Burned" 
-          value="2,450" 
+          value={stats?.total_calories?.toLocaleString() || "2,450"} 
           trend="+12%" 
           color="text-primary"
         />
         <StatCard 
           icon={Flame} 
-          label="Avg. Intensity" 
-          value="85%" 
+          label="Workouts Done" 
+          value={stats?.total_workouts || "12"} 
           trend="+5%" 
           color="text-orange-500"
         />
         <StatCard 
           icon={Clock} 
           label="Training Time" 
-          value="12.5h" 
+          value={`${stats?.total_hours?.toFixed(1) || "12.5"}h`} 
           trend="+2.1h" 
           color="text-purple-500"
         />
         <StatCard 
           icon={Sparkles} 
-          label="Form Score" 
-          value="94/100" 
+          label="Avg. Session" 
+          value={stats?.average_sessions_per_week?.toFixed(1) || "3.2"} 
           trend="+2%" 
           color="text-amber-400"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Activity Chart */}
-        <div className="lg:col-span-2 card-premium">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-               <h3 className="text-xl font-bold text-white">Workout Consistency</h3>
-               <p className="text-sm text-zinc-500">Your performance over the last week</p>
+        {/* Recommended & Activity */}
+        <div className="lg:col-span-2 space-y-8">
+           <div className="rounded-3xl border border-white/5 bg-zinc-900/50 p-8 backdrop-blur-xl">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-6">
+                 <Target className="text-primary" size={24} />
+                 Recommended for Today
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <RecommendedWorkout title="Elite Chest Mastery" duration="45 mins" intensity="High" />
+                 <RecommendedWorkout title="AI Form Corrector: Squats" duration="20 mins" intensity="Technical" />
+              </div>
+           </div>
+
+           {/* Activity Chart */}
+           <div className="card-premium">
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                 <h3 className="text-xl font-bold text-white">Workout Consistency</h3>
+                 <p className="text-sm text-zinc-500">Your performance over the last week</p>
+              </div>
             </div>
-            <select className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-zinc-400 outline-none focus:border-primary/50">
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
-            </select>
-          </div>
-          <div className="h-[320px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activityData}>
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#71717a', fontSize: 12 }}
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#71717a', fontSize: 12 }}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="value" 
-                  stroke="#3b82f6" 
-                  strokeWidth={4}
-                  fillOpacity={1} 
-                  fill="url(#colorValue)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+            <div className="h-[320px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={activityData}>
+                  <defs>
+                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '16px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+           </div>
         </div>
 
-        {/* Sidebar Cards */}
-        <div className="space-y-6">
-          {/* AI Coach Suggestion */}
-          <div className="rounded-3xl border border-primary/30 bg-primary/5 p-8 backdrop-blur-xl relative overflow-hidden group shadow-2xl shadow-primary/10">
-            <div className="absolute -top-10 -right-10 h-40 w-40 bg-primary/20 blur-[80px] rounded-full" />
-            <div className="relative">
-               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-xl shadow-primary/20 mb-6">
-                  <BrainCircuit className="text-white" size={24} />
-               </div>
-               <h3 className="text-xl font-bold text-white tracking-tight">AI Daily Insight</h3>
-               <p className="mt-4 text-sm leading-relaxed text-zinc-300">
-                 &quot;{firstName}, your recovery score is high (88%). Today is perfect for a high-intensity chest session. Should I prepare your routine?&quot;
-               </p>
-               <div className="mt-8 flex gap-3">
-                  <Button className="flex-1 btn-primary text-sm h-11">
-                     Let&apos;s go
-                  </Button>
-                  <Button variant="ghost" className="flex-1 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 text-sm h-11">
-                     Skip
-                  </Button>
-               </div>
-            </div>
-          </div>
+        {/* Sidebar: Leaderboard & Body Map */}
+        <div className="space-y-8">
+           <BodyMap 
+             intensityData={{
+               chest: 85,
+               abs: 40,
+               quads: 92,
+               shoulders: 65,
+               arms: 55
+             }} 
+           />
+           
+           <Leaderboard 
+             entries={data?.leaderboard || [
+               { rank: 1, name: "Alex Rivers", score: 1250, avg_form: 98.2 },
+               { rank: 2, name: "Sarah Chen", score: 1180, avg_form: 96.5 },
+               { rank: 3, name: "Mike Ross", score: 950, avg_form: 94.0 },
+               { rank: 4, name: "James Wilson", score: 820, avg_form: 92.8 },
+               { rank: 5, name: "Emma Watson", score: 750, avg_form: 91.5 },
+             ]} 
+           />
 
-          {/* Recommended Workouts */}
-          <div className="card-premium">
-            <div className="flex items-center justify-between mb-6">
-               <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500">Recommended</h3>
-               <Sparkles className="text-primary animate-pulse" size={18} />
-            </div>
-            <div className="space-y-4">
-              <RecommendedWorkout 
-                title="Hypertrophy Chest" 
-                duration="45m" 
-                intensity="High"
-              />
-              <RecommendedWorkout 
-                title="Active Recovery" 
-                duration="20m" 
-                intensity="Low"
-              />
-              <RecommendedWorkout 
-                title="Deadlift Focus" 
-                duration="60m" 
-                intensity="Extreme"
-              />
-            </div>
-            <Link href="/dashboard/member/workouts">
-              <Button variant="ghost" className="mt-6 w-full text-sm text-primary hover:bg-primary/5 group">
-                View All Routines
-                <ArrowUpRight className="ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" size={16} />
-              </Button>
-            </Link>
-          </div>
+           {/* AI Coach Suggestion */}
+           <div className="rounded-3xl border border-primary/30 bg-primary/5 p-8 backdrop-blur-xl relative overflow-hidden group shadow-2xl shadow-primary/10">
+             <div className="absolute -top-10 -right-10 h-40 w-40 bg-primary/20 blur-[80px] rounded-full" />
+             <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                   <div className="h-10 w-10 rounded-2xl bg-primary flex items-center justify-center text-white">
+                      <BrainCircuit size={20} />
+                   </div>
+                   <h4 className="font-bold text-white">AI Coach Tip</h4>
+                </div>
+                <p className="text-sm text-zinc-300 leading-relaxed italic">
+                   &quot;Your left shoulder is slightly dropping on bench press reps. Focus on symmetry and engaging your lats more during the descent.&quot;
+                </p>
+                <div className="mt-6 pt-6 border-t border-white/5">
+                   <Button variant="ghost" className="w-full text-xs text-primary hover:bg-primary/10">View Detailed Form Analysis</Button>
+                </div>
+             </div>
+           </div>
         </div>
       </div>
-      
-      {/* Bottom Row - Recent Activity */}
-      <div className="card-premium">
-         <div className="mb-8 flex items-center justify-between">
+
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             <div>
                <h3 className="text-xl font-bold text-white">Recent Training History</h3>
                <p className="text-sm text-zinc-500">Your last 3 gym sessions</p>
