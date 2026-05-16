@@ -6,9 +6,7 @@ import { motion } from "framer-motion";
 import { 
   Activity, 
   Flame, 
-  TrendingUp, 
   Clock, 
-  ChevronRight,
   Sparkles, 
   TrendingUp, 
   Play, 
@@ -233,47 +231,50 @@ export default function MemberDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <div>
-               <h3 className="text-xl font-bold text-white">Recent Training History</h3>
-               <p className="text-sm text-zinc-500">Your last 3 gym sessions</p>
-            </div>
-            <Link href="/dashboard/member/analytics">
-              <Button variant="outline" className="rounded-xl border-white/10 text-xs px-4 h-9 hover:bg-white/5 transition-colors">View Full History</Button>
-            </Link>
-         </div>
-         <div className="space-y-2">
-            {[
-              { name: "Full Body Blast", date: "Yesterday, 6:30 PM", calories: "640 kcal", duration: "55m", score: "92" },
-              { name: "Morning Yoga", date: "Oct 12, 8:00 AM", calories: "210 kcal", duration: "30m", score: "98" },
-              { name: "Leg Power Drills", date: "Oct 10, 5:15 PM", calories: "780 kcal", duration: "70m", score: "85" },
-            ].map((workout, i) => (
-              <div key={i} className="flex items-center justify-between rounded-2xl p-5 transition-all hover:bg-white/5 group border border-transparent hover:border-white/5 cursor-pointer">
-                 <div className="flex items-center gap-5">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-400 group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                       <Dumbbell size={22} />
-                    </div>
-                    <div>
-                       <p className="font-bold text-white group-hover:text-primary transition-colors">{workout.name}</p>
-                       <p className="text-xs text-zinc-500 mt-0.5">{workout.date}</p>
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-12">
-                    <div className="hidden text-right md:block">
-                       <p className="text-sm font-bold text-zinc-300">{workout.calories}</p>
-                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Energy</p>
-                    </div>
-                    <div className="hidden text-right md:block">
-                       <p className="text-sm font-bold text-zinc-300">{workout.duration}</p>
-                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Time</p>
-                    </div>
-                    <div className="text-right bg-emerald-400/10 px-4 py-2 rounded-xl border border-emerald-400/20">
-                       <p className="text-sm font-black text-emerald-400">{workout.score}%</p>
-                       <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Score</p>
-                    </div>
-                 </div>
+        <div className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                 <h3 className="text-xl font-bold text-white">Recent Training History</h3>
+                 <p className="text-sm text-zinc-500">Your last 3 gym sessions</p>
               </div>
-            ))}
-         </div>
+              <Link href="/dashboard/member/analytics">
+                <Button variant="outline" className="rounded-xl border-white/10 text-xs px-4 h-9 hover:bg-white/5 transition-colors">View Full History</Button>
+              </Link>
+            </div>
+            <div className="space-y-4">
+              {[
+                { name: "Full Body Blast", date: "Yesterday, 6:30 PM", calories: "640 kcal", duration: "55m", score: "92" },
+                { name: "Morning Yoga", date: "Oct 12, 8:00 AM", calories: "210 kcal", duration: "30m", score: "98" },
+                { name: "Leg Power Drills", date: "Oct 10, 5:15 PM", calories: "780 kcal", duration: "70m", score: "85" },
+              ].map((workout, i) => (
+                <div key={i} className="flex items-center justify-between rounded-2xl p-5 transition-all hover:bg-white/5 group border border-transparent hover:border-white/5 cursor-pointer">
+                  <div className="flex items-center gap-5">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-800 text-zinc-400 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                        <Activity size={22} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-white group-hover:text-primary transition-colors">{workout.name}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5">{workout.date}</p>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-12">
+                      <div className="hidden text-right md:block">
+                        <p className="text-sm font-bold text-zinc-300">{workout.calories}</p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Energy</p>
+                      </div>
+                      <div className="hidden text-right md:block">
+                        <p className="text-sm font-bold text-zinc-300">{workout.duration}</p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Time</p>
+                      </div>
+                      <div className="text-right bg-emerald-400/10 px-4 py-2 rounded-xl border border-emerald-400/20">
+                        <p className="text-sm font-black text-emerald-400">{workout.score}%</p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-widest mt-0.5">Score</p>
+                      </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+        </div>
       </div>
     </div>
   );
