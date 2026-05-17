@@ -73,6 +73,8 @@ async def get_nutrition_history(
                 "protein": log.protein_g,
                 "carbs": log.carbs_g,
                 "fat": log.fat_g,
+                "food_items": log.food_items,
+                "notes": log.notes,
                 "logged_at": log.logged_at,
             }
             for log in logs
@@ -112,4 +114,32 @@ async def snap_and_log_nutrition(
     await db.refresh(nutrition_log)
 
     return NutritionLogResponse.model_validate(nutrition_log)
+
+
+@router.get("/member/{member_id}/meal-plan")
+async def get_latest_meal_plan(
+    member_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get the latest AI meal plan for a member."""
+    from backend.models import MealPlan
+    from sqlalchemy import select
+    result = await db.execute(
+        select(MealPlan)
+        .where(MealPlan.member_id == member_id)
+        .order_by(MealPlan.created_at.desc())
+        .limit(1)
+    )
+    plan = result.scalars().first()
+    if not plan:
+        return None
+    return {
+        "id": plan.id,
+        "goal": plan.goal,
+        "calories_target": plan.calories_target,
+        "macro_targets": plan.macro_targets,
+        "meals": plan.meals,
+        "shopping_list": plan.shopping_list,
+        "created_at": plan.created_at
+    }
 

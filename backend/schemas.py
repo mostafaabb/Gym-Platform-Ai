@@ -341,8 +341,13 @@ class NutritionLogResponse(BaseModel):
     id: int
     member_id: int
     meal_type: str
-    total_calories: Optional[float]
-    protein_g: Optional[float]
+    food_items: list[dict] = []
+    total_calories: Optional[float] = None
+    protein_g: Optional[float] = None
+    carbs_g: Optional[float] = None
+    fat_g: Optional[float] = None
+    notes: Optional[str] = None
+    logged_at: datetime
     created_at: datetime
 
     class Config:
