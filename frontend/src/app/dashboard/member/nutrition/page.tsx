@@ -547,7 +547,7 @@ export default function NutritionPage() {
 
           {/* Modal Body */}
           <div 
-            className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 p-8 shadow-2xl z-10 transform scale-100 opacity-100 transition-all duration-300"
+            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-zinc-950 p-8 shadow-2xl z-10 transform scale-100 opacity-100 transition-all duration-300"
           >
             <button 
               onClick={() => setIsModalOpen(false)}
