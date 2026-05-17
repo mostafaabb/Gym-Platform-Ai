@@ -76,7 +76,15 @@ async def generate_nutrition_plan(
     """Generate personalized nutrition plan using AI."""
     from backend.services.nutrition_service import nutrition_service
     plan = await nutrition_service.generate_meal_plan(db, member_id, goal)
-    return plan
+    return {
+        "id": plan.id,
+        "goal": plan.goal,
+        "calories_target": plan.calories_target,
+        "macro_targets": plan.macro_targets,
+        "meals": plan.meals,
+        "shopping_list": plan.shopping_list,
+        "created_at": plan.created_at
+    }
 
 
 @router.post("/posture-analysis/{workout_id}")

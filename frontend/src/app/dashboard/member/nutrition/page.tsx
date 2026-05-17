@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Utensils, 
@@ -73,6 +73,9 @@ export default function NutritionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiSuccessMessage, setAiSuccessMessage] = useState<string | null>(null);
+  const [aiErrorMessage, setAiErrorMessage] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Manual Log Fields
   const [mealType, setMealType] = useState("breakfast");
@@ -200,13 +203,13 @@ export default function NutritionPage() {
     }
   };
 
-  // Submit image to AI Vision parser
-  const handleVisionUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Unified AI Vision Meal parser
+  const processFile = async (file: File) => {
     if (!file) return;
 
     setAiAnalyzing(true);
     setAiSuccessMessage(null);
+    setAiErrorMessage(null);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -221,7 +224,7 @@ export default function NutritionPage() {
       setAiSuccessMessage(`Successfully logged ${parsedLog.meal_type}! Consumed: ${parsedLog.total_calories || 0} kcal.`);
       fetchNutritionData();
       
-      // Auto-fill manual tab in case they want to adjust
+      // Auto-fill manual tab in case they want to adjust or review macros
       setMealType(parsedLog.meal_type || "lunch");
       setFoodItems(parsedLog.food_items?.map((item: any) => item.name).join(", ") || "");
       setCalories(parsedLog.total_calories?.toString() || "");
@@ -229,10 +232,43 @@ export default function NutritionPage() {
       setCarbs(parsedLog.carbs_g?.toString() || "");
       setFat(parsedLog.fat_g?.toString() || "");
       setNotes(parsedLog.notes || "");
-    } catch (err) {
+    } catch (err: any) {
       console.error("AI vision error", err);
+      setAiErrorMessage(
+        err?.response?.data?.detail || 
+        "AI Vision scan failed. Please try a different, smaller, or higher contrast meal image."
+      );
     } finally {
       setAiAnalyzing(false);
+    }
+  };
+
+  // Submit image from click selector
+  const handleVisionUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  // Drag and drop event handlers
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -593,6 +629,14 @@ export default function NutritionPage() {
               </div>
             )}
 
+            {/* Error alert from AI */}
+            {aiErrorMessage && (
+              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs flex items-center gap-3">
+                <AlertCircle size={18} className="flex-shrink-0" />
+                <span>{aiErrorMessage}</span>
+              </div>
+            )}
+
             {modalTab === "manual" ? (
               <form onSubmit={handleManualSubmit} className="space-y-4">
                 <div>
@@ -694,15 +738,27 @@ export default function NutritionPage() {
                 </Button>
               </form>
             ) : (
-              <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-white/10 rounded-2xl bg-zinc-900/30">
+              <div 
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-2xl bg-zinc-900/30 cursor-pointer transition-all duration-200",
+                  dragActive 
+                    ? "border-primary bg-primary/5 scale-[1.02]" 
+                    : "border-white/10 hover:border-white/20"
+                )}
+              >
                 {aiAnalyzing ? (
-                  <div className="text-center space-y-4 py-8">
+                  <div className="text-center space-y-4 py-8 pointer-events-none">
                     <Loader2 className="h-10 w-10 text-primary animate-spin mx-auto" />
                     <p className="text-sm font-semibold text-white">Analyzing food items & macros...</p>
                     <p className="text-xs text-zinc-500">GPT-4o Vision is processing your meal image</p>
                   </div>
                 ) : (
-                  <label className="w-full cursor-pointer text-center space-y-4 py-8 flex flex-col items-center justify-center">
+                  <div className="text-center space-y-4 py-8 flex flex-col items-center justify-center pointer-events-none">
                     <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 shadow-lg shadow-primary/5">
                       <Camera size={28} />
                     </div>
@@ -712,15 +768,16 @@ export default function NutritionPage() {
                     </div>
                     <input 
                       type="file" 
+                      ref={fileInputRef}
                       accept="image/*"
                       className="hidden" 
                       onChange={handleVisionUpload}
                     />
-                    <Button variant="outline" className="text-xs rounded-xl border-white/10 text-white">
+                    <Button variant="outline" className="text-xs rounded-xl border-white/10 text-white mt-4 pointer-events-none">
                       <Upload size={14} className="mr-2" />
                       Select File
                     </Button>
-                  </label>
+                  </div>
                 )}
               </div>
             )}
