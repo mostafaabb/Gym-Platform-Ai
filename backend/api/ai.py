@@ -94,17 +94,9 @@ async def analyze_workout_posture(
 @router.get("/injury-prediction/{member_id}")
 async def predict_injury_risk(member_id: int, db: AsyncSession = Depends(get_db)):
     """Predict injury risk based on member data and history."""
-    # TODO: Implement injury prediction model
-    return {
-        "member_id": member_id,
-        "injury_risk_score": 15.3,
-        "risk_level": "low",
-        "risk_factors": [],
-        "recommendations": [
-            "Increase warm-up duration",
-            "Focus on mobility work"
-        ]
-    }
+    from backend.services.injury_service import InjuryRiskService
+    risk_report = await InjuryRiskService.calculate_member_risk(db, member_id)
+    return risk_report
 
 
 @router.post("/voice-chat/{member_id}")

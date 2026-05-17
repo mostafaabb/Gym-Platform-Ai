@@ -4,9 +4,10 @@ from sqlalchemy import select, func
 from datetime import datetime, timedelta
 from backend.core.database import get_db
 from backend.core.exceptions import ResourceNotFoundException
-from backend.models import Workout, Member, ProgressTracking, NutritionLog
+from backend.models import Workout, Member, ProgressTracking, NutritionLog, Attendance
 from backend.schemas import WorkoutStatsResponse, MemberAnalyticsResponse, GymAnalyticsResponse
 from backend.repositories.repositories import MemberRepository
+
 
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 member_repo = MemberRepository()
@@ -194,3 +195,128 @@ async def get_member_nutrition_summary(
             for l in logs[:10]
         ]
     }
+
+
+@router.get("/owners/churn-risk/{gym_id}")
+async def get_at_risk_members(gym_id: int, db: AsyncSession = Depends(get_db)):
+    """Identifies members belonging to a gym whose activity baseline has plummeted, predicting churn."""
+    now = datetime.utcnow()
+    two_weeks_ago = now - timedelta(days=14)
+    
+    # Query all active members in the gym
+    query = select(Member).where(
+        Member.gym_id == gym_id,
+        Member.is_active == True
+    )
+    result = await db.execute(query)
+    members = result.scalars().all()
+    
+    at_risk_list = []
+    
+    for member in members:
+        # Load user context if available
+        user_result = await db.execute(select(Member).where(Member.id == member.id))
+        
+        # 1. Fetch attendance check-in count
+        att_query = select(func.count(Attendance.id)).where(
+            Attendance.member_id == member.id,
+            Attendance.check_in_at >= two_weeks_ago
+        )
+        att_result = await db.execute(att_query)
+        check_ins = att_result.scalar() or 0
+        
+        # 2. Fetch workout count in last 14 days
+        workout_query = select(func.count(Workout.id)).where(
+            Workout.member_id == member.id,
+            Workout.start_time >= two_weeks_ago,
+            Workout.completed == True
+        )
+        workout_result = await db.execute(workout_query)
+        workouts = workout_result.scalar() or 0
+        
+        # 3. Calculate Risk Index (w1 * attendance drop + w2 * workout drop)
+        # Assuming standard benchmark is 4 check-ins and 4 workouts in 2 weeks
+        att_score = min(100, (check_ins / 4) * 100)
+        workout_score = min(100, (workouts / 4) * 100)
+        
+        # 100 is fully consistent, 0 is fully lapsed
+        consistency = (0.5 * att_score) + (0.5 * workout_score)
+        churn_prob = round(100 - consistency, 1)
+        
+        # If churn risk is above 40%, flag it
+        if churn_prob >= 40.0:
+            at_risk_list.append({
+                "member_id": member.id,
+                "check_ins_14d": check_ins,
+                "workouts_14d": workouts,
+                "churn_probability": churn_prob,
+                "risk_tier": "Critical" if churn_prob >= 75 else "Warning",
+                "recommended_action": "Send 1-on-1 Trainer Session Voucher"
+            })
+            
+    return {
+        "gym_id": gym_id,
+        "total_at_risk_members": len(at_risk_list),
+        "at_risk_members": sorted(at_risk_list, key=lambda x: x["churn_probability"], reverse=True)
+    }
+
+
+@router.get("/members/{member_id}/muscle-recovery")
+async def get_muscle_recovery(member_id: int, db: AsyncSession = Depends(get_db)):
+    """Calculates dynamic muscle recovery percentage based on a biological decay formula."""
+    now = datetime.utcnow()
+    
+    # Fetch all completed workouts in last 7 days
+    result = await db.execute(
+        select(Workout)
+        .where(
+            Workout.member_id == member_id,
+            Workout.completed == True,
+            Workout.start_time >= now - timedelta(days=7)
+        )
+        .order_by(Workout.start_time.desc())
+    )
+    recent_workouts = result.scalars().all()
+    
+    # Core muscle groups
+    muscle_groups = ["Chest", "Quads", "Triceps", "Back", "Shoulders", "Hamstrings", "Biceps"]
+    last_trained = {}
+    
+    for workout in recent_workouts:
+        w_type = workout.workout_type or "general"
+        # Map workout types to target muscle groups
+        targets = []
+        if "chest" in w_type.lower() or "push" in w_type.lower():
+            targets.extend(["Chest", "Triceps", "Shoulders"])
+        if "back" in w_type.lower() or "pull" in w_type.lower():
+            targets.extend(["Back", "Biceps"])
+        if "leg" in w_type.lower() or "squat" in w_type.lower():
+            targets.extend(["Quads", "Hamstrings"])
+            
+        for m in targets:
+            if m not in last_trained:
+                last_trained[m] = workout.start_time
+                
+    recovery_data = []
+    # Biological decay constant (30 hour half-life: lambda = 0.023)
+    lam = 0.023
+    
+    for m in muscle_groups:
+        if m in last_trained:
+            hours_since = (now - last_trained[m]).total_seconds() / 3600
+            # Recovery starts at 20% immediately post-workout and recovers exponentially
+            rec = 20.0 + (100.0 - 20.0) * (1.0 - __import__('math').exp(-lam * hours_since))
+            rec = round(min(100.0, rec), 1)
+            time_str = f"{round(hours_since, 1)} hours ago"
+        else:
+            rec = 100.0
+            time_str = "more than 7 days ago"
+            
+        recovery_data.append({
+            "name": m,
+            "recovery": rec,
+            "lastTrained": time_str
+        })
+        
+    return recovery_data
+

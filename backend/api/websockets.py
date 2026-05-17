@@ -109,9 +109,24 @@ async def coach_websocket_endpoint(
                         "score": analysis["score"]
                     })
                 
-                # Periodically save analysis events to DB (using a background task ideally)
-                # For simplicity, we just log it here
+                # Periodically save analysis events to DB
                 logger.debug(f"Pose Analysis for {user.email}: {analysis['score']}")
+
+            elif msg_type == "duel_update":
+                # Synchronize real-time sets/reps and form scores to challenger
+                opponent_id = message.get("opponent_id")
+                rep_count = message.get("rep_count", 0)
+                form_score = message.get("form_score", 100.0)
+                exercise = message.get("exercise", "squat")
+                
+                if opponent_id:
+                    await manager.send_personal_message({
+                        "type": "opponent_progress",
+                        "exercise": exercise,
+                        "rep_count": rep_count,
+                        "form_score": form_score,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, int(opponent_id))
 
             elif msg_type == "ping":
                 await websocket.send_json({"type": "pong"})

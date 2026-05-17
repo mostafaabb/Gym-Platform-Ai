@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from backend.core.database import get_db
@@ -9,6 +9,7 @@ from backend.repositories.repositories import MemberRepository
 
 router = APIRouter(prefix="/nutrition", tags=["Nutrition"])
 member_repo = MemberRepository()
+
 
 
 @router.post("/log", response_model=NutritionLogResponse, status_code=status.HTTP_201_CREATED)
@@ -77,3 +78,38 @@ async def get_nutrition_history(
             for log in logs
         ]
     }
+
+
+@router.post("/snap-log", response_model=NutritionLogResponse, status_code=status.HTTP_201_CREATED)
+async def snap_and_log_nutrition(
+    member_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Log nutrition by uploading a photo analyzed by AI Vision."""
+    member = await member_repo.get(db, member_id)
+    if not member:
+        raise ResourceNotFoundException("Member not found")
+
+    image_bytes = await file.read()
+    
+    from backend.services.ai_service import ai_service
+    analysis = await ai_service.analyze_meal_image(image_bytes)
+
+    nutrition_log = NutritionLog(
+        member_id=member_id,
+        meal_type=analysis.get("meal_type", "lunch"),
+        food_items=analysis.get("food_items", []),
+        total_calories=analysis.get("total_calories", 0.0),
+        protein_g=analysis.get("protein_g", 0.0),
+        carbs_g=analysis.get("carbs_g", 0.0),
+        fat_g=analysis.get("fat_g", 0.0),
+        notes=analysis.get("notes", ""),
+        logged_at=datetime.utcnow(),
+    )
+    db.add(nutrition_log)
+    await db.commit()
+    await db.refresh(nutrition_log)
+
+    return NutritionLogResponse.model_validate(nutrition_log)
+
