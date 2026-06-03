@@ -115,6 +115,26 @@ async def snap_and_log_nutrition(
 
     return NutritionLogResponse.model_validate(nutrition_log)
 
+@router.post("/fridge-recipe")
+async def generate_fridge_recipe(
+    member_id: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
+):
+    """Reverse-Engineering Fridge Scanner & Recipe Generator."""
+    member = await member_repo.get(db, member_id)
+    if not member:
+        raise ResourceNotFoundException("Member not found")
+
+    image_bytes = await file.read()
+    
+    from backend.services.ai_service import ai_service
+    # Mock remaining macros calculation based on history
+    remaining_macros = {"calories": 600, "protein_g": 40, "carbs_g": 30, "fat_g": 20}
+    recipe = await ai_service.generate_fridge_recipe(image_bytes, remaining_macros)
+
+    return {"member_id": member_id, "recipe": recipe}
+
 
 @router.get("/member/{member_id}/meal-plan")
 async def get_latest_meal_plan(

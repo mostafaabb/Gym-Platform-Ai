@@ -146,5 +146,71 @@ class AIService:
                 "notes": "Fabulous balanced plate! High in protein for muscle synthesis, slow-release carbs, and fibers."
             }
 
+    async def generate_trainer_brief(self, clients_data: List[Dict[str, Any]]) -> str:
+        """Trainer Copilot: Generate AI morning brief for trainers."""
+        prompt = f"""
+        Act as an AI Command Center for a human trainer. 
+        Analyze the following recent data for their clients and generate a short morning brief highlighting risks (like ACWR injury risk), churn risks, and good streaks. Also provide 'auto-draft' suggested messages to send to each highlighted client.
+        
+        Clients Data: {json.dumps(clients_data)}
+        """
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=500
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"Trainer brief generation error: {e}")
+            return "Unable to generate brief right now."
+
+    async def generate_fridge_recipe(self, image_bytes: bytes, remaining_macros: Dict[str, float]) -> Dict[str, Any]:
+        """Reverse-Engineering Fridge Scanner & Recipe Generator."""
+        import base64
+        try:
+            base64_image = base64.b64encode(image_bytes).decode("utf-8")
+            prompt = f"""
+            Analyze this fridge/pantry image. Identify ingredients.
+            Create a step-by-step recipe that fits roughly into these remaining daily macros:
+            {json.dumps(remaining_macros)}
+            
+            Return JSON:
+            {{
+                "recipe_name": "...",
+                "ingredients_used": ["..."],
+                "instructions": ["..."],
+                "estimated_macros": {{"calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0}}
+            }}
+            """
+            response = await self.client.chat.completions.create(
+                model="gpt-4o",
+                response_format={"type": "json_object"},
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                max_tokens=600
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            logger.error(f"Fridge recipe generation error: {e}")
+            return {
+                "recipe_name": "Chicken & Veggie Stir Fry",
+                "ingredients_used": ["Chicken", "Broccoli", "Soy Sauce"],
+                "instructions": ["Chop chicken.", "Stir fry chicken and broccoli.", "Add soy sauce."],
+                "estimated_macros": {"calories": 300, "protein_g": 35, "carbs_g": 10, "fat_g": 12}
+            }
+
 ai_service = AIService()
 

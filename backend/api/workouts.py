@@ -68,6 +68,33 @@ async def get_workout(
     return WorkoutResponse.model_validate(workout)
 
 
+@router.get("/{workout_id}/dynamic-route")
+async def get_dynamic_workout_route(
+    member_id: int,
+    workout_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Waze for the Gym: Dynamic Equipment Routing based on availability."""
+    workout = await workout_repo.get(db, workout_id)
+    if not workout or workout.member_id != member_id:
+        raise ResourceNotFoundException("Workout not found")
+        
+    # Mock DAG routing logic checking gym capacity and alternative exercises
+    mock_gym_state = {
+        "Chest Press Machine": "full",
+        "Dumbbell Rack": "available"
+    }
+    
+    routing_suggestion = None
+    if mock_gym_state.get("Chest Press Machine") == "full":
+        routing_suggestion = "The chest press is full, let's substitute with heavy dumbbell bench presses today instead."
+
+    return {
+        "workout_id": workout_id,
+        "suggestion": routing_suggestion,
+        "alternatives": ["Dumbbell Bench Press", "Push-ups"]
+    }
+
 @router.put("/{workout_id}", response_model=WorkoutResponse)
 async def update_workout(
     member_id: int,
@@ -119,6 +146,19 @@ async def complete_workout(
 
     return WorkoutResponse.model_validate(workout)
 
+
+@router.get("/{workout_id}/ghost", response_model=WorkoutResponse)
+async def get_workout_ghost(
+    member_id: int,
+    workout_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Ghost Mode: Live Asynchronous Duels"""
+    workout = await workout_repo.get(db, workout_id)
+    if not workout: # Intentionally omitting member_id check to let you duel friends' workouts
+        raise ResourceNotFoundException("Workout not found")
+
+    return WorkoutResponse.model_validate(workout)
 
 @router.delete("/{workout_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_workout(

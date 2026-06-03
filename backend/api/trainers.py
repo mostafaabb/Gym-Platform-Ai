@@ -104,3 +104,16 @@ async def get_trainer_clients(trainer_id: int, db: AsyncSession = Depends(get_db
         "total_clients": len(clients),
         "clients": [{"id": c.id, "user_id": c.user_id} for c in clients if c]
     }
+
+from backend.services.ai_service import ai_service
+
+@router.get("/{trainer_id}/copilot-brief")
+async def get_trainer_copilot_brief(trainer_id: int, db: AsyncSession = Depends(get_db)):
+    """Trainer Copilot: Generates an AI morning brief for trainers."""
+    # Mock data aggregation for clients
+    clients_data = [
+        {"name": "John Doe", "days_streak": 5, "acwr_risk": "High", "recent_logs": "Dropped nutrition"},
+        {"name": "Sarah Smith", "days_streak": 2, "acwr_risk": "Low", "recent_logs": "Consistent"}
+    ]
+    brief = await ai_service.generate_trainer_brief(clients_data)
+    return {"trainer_id": trainer_id, "brief": brief}

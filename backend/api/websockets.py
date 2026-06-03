@@ -100,6 +100,15 @@ async def coach_websocket_endpoint(
                 landmarks = message.get("landmarks")
                 exercise = message.get("exercise", "squat")
                 
+                # Velocity-Based Training (VBT) logic
+                velocity = message.get("velocity")
+                if velocity is not None and velocity < 0.3:
+                    await websocket.send_json({
+                        "type": "vbt_alert",
+                        "content": "Push hard! Don't drop it! Velocity is critical.",
+                        "velocity": velocity
+                    })
+
                 analysis = await ai_service.analyze_pose_landmarks(landmarks, exercise)
                 
                 if analysis["alerts"]:
